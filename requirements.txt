@@ -1,1 +1,5 @@
 matplotlib
+docker
+Flask
+Flask-SQLAlchemy
+requests
