@@ -16,6 +16,7 @@ from enum import Enum
 import random
 from src.core.models import DefenseType
 from src.logger import logger
+from src.attacks.advanced import AdvancedRedTeamExecutor
 
 
 class AttackPhase(Enum):
@@ -520,13 +521,68 @@ class SideChannelAnalysisScenario:
         return probes
 
 # ============================================================================
+# SCENARIO 9: THE ADAPTIVE ARSENAL
+# ============================================================================
+
+class AdaptiveArsenalScenario:
+    """
+    Injects a wave of advanced, adaptive attacks from the main Red Team executor.
+    This scenario acts as a bridge, bringing the most sophisticated attacks
+    into the orchestrated campaign.
+    """
+    def __init__(self, red_team_executor: AdvancedRedTeamExecutor):
+        self.red_team_executor = red_team_executor
+
+    def generate_adaptive_wave(self, generation: int, num_attacks: int = 5) -> List[Tuple[str, Any]]:
+        """
+        Selects a diverse set of high-difficulty adaptive attacks.
+        """
+        self.red_team_executor.generation = generation
+
+        # Select a diverse range of high-difficulty patterns
+        all_patterns = self.red_team_executor.advanced_patterns
+        high_difficulty_patterns = [p for p in all_patterns if p.difficulty >= 8]
+
+        # Ensure diversity by picking from different defense types
+        selected_patterns = []
+        seen_types = set()
+        for p in sorted(high_difficulty_patterns, key=lambda x: x.difficulty, reverse=True):
+            if p.defense_type not in seen_types:
+                selected_patterns.append(p)
+                seen_types.add(p.defense_type)
+
+        # Fill remaining slots if we don't have enough diverse attacks
+        if len(selected_patterns) < num_attacks:
+            remaining_patterns = [p for p in all_patterns if p not in selected_patterns]
+            selected_patterns.extend(
+                random.sample(
+                    remaining_patterns,
+                    min(len(remaining_patterns), num_attacks - len(selected_patterns))
+                )
+            )
+
+        # Generate payloads from the selected patterns
+        attack_wave = []
+        for pattern in selected_patterns[:num_attacks]:
+            try:
+                payload = pattern.payload_generator()
+                # We need to map the DefenseType enum to a string for the campaign
+                attack_type = pattern.defense_type.name.lower()
+                attack_wave.append((attack_type, payload))
+            except Exception:
+                # Skip if payload generation fails
+                continue
+
+        return attack_wave
+
+# ============================================================================
 # SCENARIO ORCHESTRATOR
 # ============================================================================
 
 class ScenarioOrchestrator:
     """Coordinates multiple attack scenarios"""
     
-    def __init__(self):
+    def __init__(self, red_team_executor: AdvancedRedTeamExecutor):
         self.scenarios = {
             "polymorphic": PolymorphicTransformerScenario(),
             "layered_siege": LayeredSiegeScenario(),
@@ -536,6 +592,7 @@ class ScenarioOrchestrator:
             "evolutionary": EvolutionaryArmsRaceScenario(),
             "metamorphic": MetamorphicPayloadScenario(),
             "side_channel": SideChannelAnalysisScenario(),
+            "adaptive_arsenal": AdaptiveArsenalScenario(red_team_executor),
         }
         self.scenario_performance = {name: 0.0 for name in self.scenarios.keys()}
     
@@ -595,6 +652,12 @@ class ScenarioOrchestrator:
         side_channel_probes = self.scenarios["side_channel"].generate_probes(generation)
         campaign.extend([("side_channel", attack_type, payload) for attack_type, payload in side_channel_probes])
         logger.info(f"   Launched {len(side_channel_probes)} side-channel probes")
+
+        # Adaptive Arsenal (New)
+        logger.info(f"\n📍 Scenario 9: Adaptive Arsenal (Advanced Attacks)")
+        adaptive_attacks = self.scenarios["adaptive_arsenal"].generate_adaptive_wave(generation)
+        campaign.extend([("adaptive_arsenal", attack_type, payload) for attack_type, payload in adaptive_attacks])
+        logger.info(f"   Injected {len(adaptive_attacks)} advanced adaptive attacks")
 
         logger.info(f"\n{'='*90}")
         logger.info(f"📊 Total Campaign Size: {len(campaign)} coordinated attacks\n")

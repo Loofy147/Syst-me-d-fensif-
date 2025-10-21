@@ -15,6 +15,8 @@ from typing import Dict, List, Any
 from src.core.models import EvolvableSeed
 from src.intelligence import AutonomousIntelligence
 from src.attacks.orchestration import ScenarioOrchestrator
+from src.attacks.intelligence import AttackerIntelligence
+from src.attacks.advanced import AdvancedRedTeamExecutor
 from src.core.models import DefenseType
 from src.config import config
 from src.logger import logger
@@ -30,7 +32,14 @@ class AutonomousLearningSystem:
     def __init__(self, seed_name: str = "AutonomousDefenseSystem"):
         self.seed = EvolvableSeed(seed_name)
         self.intelligence = AutonomousIntelligence(self.seed)
-        self.attack_orchestrator = ScenarioOrchestrator()
+
+        # Create attacker components
+        self.attacker_intelligence = AttackerIntelligence()
+        self.red_team_executor = AdvancedRedTeamExecutor(self.seed, self.attacker_intelligence)
+
+        # Inject attacker into the orchestrator
+        self.attack_orchestrator = ScenarioOrchestrator(self.red_team_executor)
+
         self.generation = 0
         self.learning_history = []
 
@@ -145,25 +154,32 @@ class AutonomousLearningSystem:
         self._print_final_analysis()
 
     def _map_to_defense_type(self, attack_type: str) -> DefenseType:
-        """Map attack type string to DefenseType enum"""
+        """Map attack type string to DefenseType enum in a more robust way."""
+        # Direct mapping for adaptive arsenal scenario
+        try:
+            return DefenseType[attack_type.upper()]
+        except KeyError:
+            pass
+
+        # Fallback mapping for older scenarios
         mapping = {
-            "sql_injection": "SANITIZATION",
-            "input_validation": "INPUT_VALIDATION",
-            "type_checking": "TYPE_CHECKING",
-            "bounds_enforcement": "BOUNDS_ENFORCEMENT",
-            "state_protection": "STATE_PROTECTION",
-            "sanitization": "SANITIZATION",
-            "timing_probe": "RATE_LIMITING",
-            "timing_exploit": "SANITIZATION",
-            "context_attack": "SANITIZATION",
-            "swarm_attack": "RATE_LIMITING",
-            "swarm_combined": "SANITIZATION",
-            "evolutionary": "SANITIZATION",
-            "metamorphic": "SANITIZATION",
-            "combined": "STATE_PROTECTION",
-            "side_channel_probe": "RATE_LIMITING",
+            "sql_injection": DefenseType.SANITIZATION,
+            "input_validation": DefenseType.INPUT_VALIDATION,
+            "type_checking": DefenseType.TYPE_CHECKING,
+            "bounds_enforcement": DefenseType.BOUNDS_ENFORCEMENT,
+            "state_protection": DefenseType.STATE_PROTECTION,
+            "sanitization": DefenseType.SANITIZATION,
+            "timing_probe": DefenseType.RATE_LIMITING,
+            "timing_exploit": DefenseType.SANITIZATION,
+            "context_attack": DefenseType.SANITIZATION,
+            "swarm_attack": DefenseType.RATE_LIMITING,
+            "swarm_combined": DefenseType.SANITIZATION,
+            "evolutionary": DefenseType.SANITIZATION,
+            "metamorphic": DefenseType.SANITIZATION,
+            "combined": DefenseType.STATE_PROTECTION,
+            "side_channel_probe": DefenseType.RATE_LIMITING,
         }
-        return DefenseType[mapping.get(attack_type, "INPUT_VALIDATION")]
+        return mapping.get(attack_type, DefenseType.INPUT_VALIDATION)
 
     def _print_defense_state(self):
         """Print current defense state"""

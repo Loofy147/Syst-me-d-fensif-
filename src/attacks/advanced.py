@@ -23,260 +23,144 @@ from src.attacks.models import AttackPattern
 # ADVANCED ATTACK TECHNIQUES
 # ============================================================================
 
-class AdvancedAttackLibrary:
-    """A library of sophisticated attack patterns."""
+class AdaptiveAttackGenerator:
+    """Generates adaptive and parameterized attack payloads."""
+    def __init__(self, intelligence):
+        self.intelligence = intelligence
 
-    # ========================================================================
-    # POLYMORPHIC ATTACKS - Change shape each execution
-    # ========================================================================
-    
-    @staticmethod
-    def polymorphic_sql_injection(gen: int = 0) -> str:
-        """Generates a polymorphic SQL injection payload."""
+    def polymorphic_sql_injection(self, gen: int = 0, encoding_layers: int = 1) -> str:
+        """Generates a polymorphic and multi-layered SQL injection payload."""
         variants = [
             "1' OR '1'='1",
             "1'/**/OR/**/1=1--",
             "1'||'1'='1",
             "1' UNION SELECT NULL--",
             "admin'--",
-            "' OR 1=1#",
-            "1'; DROP TABLE users;--",
-            "1' AND '1'='1",
-            "1'||(SELECT version())--",
         ]
-        return variants[gen % len(variants)]
-    
-    @staticmethod
-    def polymorphic_buffer_overflow(gen: int = 0):
-        """Buffer that changes size and pattern"""
+        payload = variants[gen % len(variants)]
+
+        for _ in range(encoding_layers):
+            payload = base64.b64encode(payload.encode()).decode()
+
+        return payload
+
+    def polymorphic_buffer_overflow(self, gen: int = 0, size: int = 1000):
+        """Generates a polymorphic buffer overflow payload with a tunable size."""
         patterns = ["A", "B", "X", "\x00", "\xff", "🔴"]
-        size = 1000 + (gen * 200)
         pattern = patterns[gen % len(patterns)]
         return pattern * size
-    
-    # ========================================================================
-    # ENCODING OBFUSCATION - Hide malicious intent
-    # ========================================================================
-    
-    @staticmethod
-    def base64_encoded_injection():
-        """Base64 encoded SQL injection"""
-        payload = "'; DROP TABLE users--"
-        return base64.b64encode(payload.encode()).decode()
-    
-    @staticmethod
-    def unicode_obfuscated_injection():
-        """Unicode tricks to bypass sanitization"""
-        # Uses unicode lookalikes and zero-width characters
-        return "admin\u200b'\u200bOR\u200b'1'\u200b=\u200b'1"
-    
-    @staticmethod
-    def hex_encoded_injection():
-        """Hex encoding to bypass pattern matching"""
-        payload = "'; DROP TABLE--"
-        return ''.join([f"\\x{ord(c):02x}" for c in payload])
-    
-    @staticmethod
-    def url_encoded_nested():
-        """Multiple layers of URL encoding"""
-        # Original: ' OR 1=1--
-        # Double encoded
-        return "%2527%2520OR%25201%253D1--"
-    
-    # ========================================================================
-    # TYPE CONFUSION ADVANCED - Complex nested types
-    # ========================================================================
-    
-    @staticmethod
-    def nested_type_confusion():
-        """Deeply nested structures"""
-        return {
-            "level1": {
-                "level2": {
-                    "level3": {
-                        "payload": "'; DROP--",
-                        "exec": lambda: "malicious"
-                    }
-                }
-            }
-        }
-    
-    @staticmethod
-    def generator_type_confusion():
-        """Generator object to bypass type checks"""
-        return (x for x in ["'; DROP--", "malicious"])
-    
-    @staticmethod
-    def class_injection():
-        """Custom class with __str__ exploit"""
-        class MaliciousClass:
+
+    # === Type Confusion Attacks ===
+
+    def nested_type_confusion(self, depth: int = 3) -> Any:
+        """Creates a nested object with confusing types to test deep type checking."""
+        payload: Any = "initial_string"
+        for i in range(depth):
+            container_type = random.choice([list, set, dict])
+            if container_type == list:
+                payload = [payload, i]
+            elif container_type == set:
+                try:
+                    payload = {payload, i}
+                except TypeError:
+                    # Fallback to list if payload is not hashable
+                    payload = [payload, i]
+            elif container_type == dict:
+                payload = {f"key_{i}": payload}
+        return payload
+
+    def generator_type_confusion(self) -> Any:
+        """Uses a generator to bypass simple type checks that don't handle iterators."""
+        def malicious_generator():
+            yield "part1"
+            yield 2
+            yield {"command": "delete", "target": "*"}
+        return malicious_generator()
+
+    def class_injection(self) -> Any:
+        """Defines a class with malicious behavior in its methods."""
+        class MaliciousPayload:
             def __str__(self):
-                return "'; DROP TABLE users--"
-            def __repr__(self):
-                return "'; DELETE FROM--"
-        return MaliciousClass()
-    
-    # ========================================================================
-    # LOGIC BOMBS - Conditional exploits
-    # ========================================================================
-    
-    @staticmethod
-    def time_based_bomb(current_time: int):
-        """Activates only at certain times"""
-        if current_time % 3 == 0:
-            return "'; DROP--"
-        return "safe_value"
-    
-    @staticmethod
-    def length_based_bomb():
-        """Looks safe until measured"""
-        # Appears short, but __len__ lies
-        class FakeLength:
-            def __init__(self):
-                self.data = "A" * 10000
+                return "1' OR '1'='1"
             def __len__(self):
-                return 5  # Lies about length
-            def __str__(self):
-                return self.data
-        return FakeLength()
-    
-    # ========================================================================
-    # CHAINED EXPLOITS - Multiple attack vectors
-    # ========================================================================
-    
-    @staticmethod
-    def chained_type_and_injection():
-        """Combines type confusion with injection"""
-        return {
-            "type": "admin",
-            "query": "'; DROP--",
-            "nested": ["'; DELETE--", {"exec": "eval"}]
-        }
-    
-    @staticmethod
-    def chained_overflow_and_state():
-        """Buffer overflow carrying state corruption"""
-        return {
-            "_protected": "A" * 5000,
-            "_internal_state": "compromised",
-            "overflow": "X" * 10000
-        }
-    
-    # ========================================================================
-    # ZERO-DAY SIMULATIONS - Novel attack vectors
-    # ========================================================================
-    
-    @staticmethod
-    def memory_exhaustion_attack():
-        """Attempts to exhaust memory"""
-        return ["X" * 1000000] * 100
-    
-    @staticmethod
-    def recursive_structure():
-        """Self-referential structure to crash parser"""
-        data = {"key": None}
-        data["key"] = data  # Circular reference
-        return data
-    
-    @staticmethod
-    def prototype_pollution():
-        """JavaScript-style prototype pollution in Python"""
-        return {
-            "__proto__": {"isAdmin": True},
-            "__class__": {"__init__": "corrupted"}
-        }
-    
-    @staticmethod
-    def format_string_exploit():
-        """Format string vulnerability"""
-        return "%s%s%s%s%s%s%s%s%s%s"
-    
-    @staticmethod
-    def race_condition_payload():
-        """Simulates race condition exploit"""
-        return {
-            "transaction_id": "12345",
-            "amount": -1000,  # Negative to exploit race
-            "concurrent": True
-        }
-    
-    # ========================================================================
-    # ADVANCED STATE MANIPULATION
-    # ========================================================================
-    
-    @staticmethod
-    def property_hijacking():
-        """Hijacks property access"""
-        class PropertyHijack:
+                return 99999
+        return MaliciousPayload()
+
+    # === Logic Bombs ===
+
+    def time_based_bomb(self, generation: int) -> Dict:
+        """A logic bomb that triggers based on an arbitrary 'time' value (generation)."""
+        trigger_condition = (generation > 0 and generation % 10 == 0)
+        return {"execute": trigger_condition, "payload": "DELETE *"}
+
+    def length_based_bomb(self) -> Dict:
+        """A logic bomb where declared length mismatches actual length."""
+        return {"declared_length": 1000, "payload": "A" * 20}
+
+    # === Chained Exploits ===
+
+    def chained_type_and_injection(self) -> Any:
+        """First passes a type check, then delivers an injection."""
+        return [1, 2, "admin'--"]
+
+    def chained_overflow_and_state(self) -> Dict:
+        """Combines a buffer overflow with a state-corrupting instruction."""
+        return {"buffer": "A" * 5000, "state_key": "__admin__", "state_value": True}
+
+    # === Zero-Day Simulations ===
+
+    def memory_exhaustion_attack(self, scale: int = 1000000) -> List:
+        """Attempts to exhaust memory by creating a massive list."""
+        try:
+            return ["A"] * scale
+        except MemoryError:
+            return ["MemoryError"]
+
+    def prototype_pollution(self) -> Dict:
+        """Simulates prototype pollution by attempting to modify shared objects."""
+        return {"__class__": {"__init__": {"__globals__": {"is_admin": True}}}}
+
+    def format_string_exploit(self) -> str:
+        """Uses format string specifiers to read/write memory."""
+        return "User: %s%s%s%n"
+
+    # === Advanced State Manipulation ===
+
+    def property_hijacking(self) -> Any:
+        """Hijacks a property to execute code upon access."""
+        class HijackedProp:
             @property
-            def safe_value(self):
-                return "'; DROP TABLE--"
-        return PropertyHijack()
-    
-    @staticmethod
-    def metaclass_injection():
-        """Uses metaclass for injection"""
-        class MetaInjection(type):
-            def __str__(cls):
-                return "'; DROP--"
-        
-        class Malicious(metaclass=MetaInjection):
+            def name(self):
+                return "1' OR '1'='1"
+        return HijackedProp()
+
+    def metaclass_injection(self) -> Any:
+        """Injects a malicious metaclass to alter class creation."""
+        class MaliciousMeta(type):
+            def __new__(cls, name, bases, dct):
+                dct['injected_attribute'] = '1; rm -rf /'
+                return super().__new__(cls, name, bases, dct)
+        class BenignClass(metaclass=MaliciousMeta):
             pass
-        
-        return Malicious
-    
-    @staticmethod
-    def double_encoding_attack():
-        """Double encoded to bypass single decode"""
-        # First layer: URL encoding
-        # Second layer: Base64
-        payload = "'; DROP--"
-        layer1 = payload.replace("'", "%27").replace(";", "%3B")
-        layer2 = base64.b64encode(layer1.encode()).decode()
-        return layer2
-    
-    # ========================================================================
-    # TIMING ATTACKS
-    # ========================================================================
-    
-    @staticmethod
-    def slow_iteration_attack():
-        """Slow iteration to cause timeout"""
-        class SlowIterator:
-            def __iter__(self):
-                return self
-            def __next__(self):
-                return "'; DROP--"
-        return SlowIterator()
-    
-    # ========================================================================
-    # ADVANCED INJECTION VECTORS
-    # ========================================================================
-    
-    @staticmethod
-    def xpath_injection():
-        """XPath injection pattern"""
-        return "' or '1'='1' or 'a'='a"
-    
-    @staticmethod
-    def ldap_injection():
-        """LDAP injection pattern"""
-        return "*)(uid=*))(|(uid=*"
-    
-    @staticmethod
-    def nosql_injection():
-        """NoSQL injection (MongoDB style)"""
-        return {"$ne": None}
-    
-    @staticmethod
-    def command_injection():
-        """OS command injection"""
-        return "test; rm -rf /"
-    
-    @staticmethod
-    def template_injection():
-        """Server-side template injection"""
-        return "{{7*7}}${7*7}<%= 7*7 %>"
+        return BenignClass
+
+    # === Advanced Injection Vectors ===
+
+    def xpath_injection(self) -> str:
+        """Injects a payload to exploit XPath queries."""
+        return "' or 1=1 or ''='"
+
+    def nosql_injection(self) -> Dict:
+        """Injects a payload for NoSQL databases using query operators."""
+        return {"$ne": ""}
+
+    def command_injection(self) -> str:
+        """Injects a shell command."""
+        return "; ls /"
+
+    def template_injection(self) -> str:
+        """Injects code into a template engine (SSTI)."""
+        return "{{ ''.__class__.__mro__[1].__subclasses__()[133]('whoami', shell=True, stdout=-1).communicate() }}"
 
 
 # ============================================================================
@@ -285,184 +169,160 @@ class AdvancedAttackLibrary:
 
 class AdvancedRedTeamExecutor:
     """Executes sophisticated attacks"""
-    
-    def __init__(self, target_seed):
+
+    def __init__(self, target_seed, attacker_intelligence):
         self.target = target_seed
+        self.attacker_intelligence = attacker_intelligence
+        self.attack_generator = AdaptiveAttackGenerator(attacker_intelligence)
         self.generation = 0
         self.advanced_patterns: List[AttackPattern] = []
         self._initialize_advanced_patterns()
-    
+
     def _initialize_advanced_patterns(self):
         """Initialize advanced attack patterns"""
-        
+
         self.advanced_patterns = [
             # Polymorphic attacks
             AttackPattern(
                 DefenseType.SANITIZATION,
-                lambda: AdvancedAttackLibrary.polymorphic_sql_injection(self.generation),
+                lambda: self.attack_generator.polymorphic_sql_injection(self.generation),
                 "Polymorphic SQL injection",
                 difficulty=7
             ),
             AttackPattern(
                 DefenseType.BOUNDS_ENFORCEMENT,
-                lambda: AdvancedAttackLibrary.polymorphic_buffer_overflow(self.generation),
+                lambda: self.attack_generator.polymorphic_buffer_overflow(self.generation),
                 "Polymorphic buffer overflow",
                 difficulty=8
             ),
-            
-            # Encoding obfuscation
-            AttackPattern(
-                DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.base64_encoded_injection,
-                "Base64 encoded injection",
-                difficulty=6
-            ),
-            AttackPattern(
-                DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.unicode_obfuscated_injection,
-                "Unicode obfuscated injection",
-                difficulty=7
-            ),
-            AttackPattern(
-                DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.hex_encoded_injection,
-                "Hex encoded injection",
-                difficulty=7
-            ),
-            AttackPattern(
-                DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.url_encoded_nested,
-                "Double URL encoded injection",
-                difficulty=8
-            ),
-            
+
             # Advanced type confusion
             AttackPattern(
                 DefenseType.TYPE_CHECKING,
-                AdvancedAttackLibrary.nested_type_confusion,
+                self.attack_generator.nested_type_confusion,
                 "Nested type confusion",
                 difficulty=6
             ),
             AttackPattern(
                 DefenseType.TYPE_CHECKING,
-                AdvancedAttackLibrary.generator_type_confusion,
+                self.attack_generator.generator_type_confusion,
                 "Generator type confusion",
                 difficulty=7
             ),
             AttackPattern(
                 DefenseType.TYPE_CHECKING,
-                AdvancedAttackLibrary.class_injection,
+                self.attack_generator.class_injection,
                 "Custom class injection",
                 difficulty=8
             ),
-            
+
             # Logic bombs
             AttackPattern(
                 DefenseType.INPUT_VALIDATION,
-                lambda: AdvancedAttackLibrary.time_based_bomb(self.generation),
+                lambda: self.attack_generator.time_based_bomb(self.generation),
                 "Time-based logic bomb",
                 difficulty=8
             ),
             AttackPattern(
                 DefenseType.BOUNDS_ENFORCEMENT,
-                AdvancedAttackLibrary.length_based_bomb,
+                self.attack_generator.length_based_bomb,
                 "Length-spoofing bomb",
                 difficulty=9
             ),
-            
+
             # Chained exploits
             AttackPattern(
                 DefenseType.TYPE_CHECKING,
-                AdvancedAttackLibrary.chained_type_and_injection,
+                self.attack_generator.chained_type_and_injection,
                 "Chained type + injection",
                 difficulty=9
             ),
             AttackPattern(
                 DefenseType.STATE_PROTECTION,
-                AdvancedAttackLibrary.chained_overflow_and_state,
+                self.attack_generator.chained_overflow_and_state,
                 "Chained overflow + state corruption",
                 difficulty=9
             ),
-            
+
             # Zero-day simulations
             AttackPattern(
                 DefenseType.BOUNDS_ENFORCEMENT,
-                AdvancedAttackLibrary.memory_exhaustion_attack,
+                self.attack_generator.memory_exhaustion_attack,
                 "Memory exhaustion attack",
                 difficulty=10
             ),
             AttackPattern(
                 DefenseType.STATE_PROTECTION,
-                AdvancedAttackLibrary.prototype_pollution,
+                self.attack_generator.prototype_pollution,
                 "Prototype pollution",
                 difficulty=9
             ),
             AttackPattern(
                 DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.format_string_exploit,
+                self.attack_generator.format_string_exploit,
                 "Format string exploit",
                 difficulty=8
             ),
-            
+
             # Advanced state manipulation
             AttackPattern(
                 DefenseType.STATE_PROTECTION,
-                AdvancedAttackLibrary.property_hijacking,
+                self.attack_generator.property_hijacking,
                 "Property hijacking",
                 difficulty=9
             ),
             AttackPattern(
                 DefenseType.TYPE_CHECKING,
-                AdvancedAttackLibrary.metaclass_injection,
+                self.attack_generator.metaclass_injection,
                 "Metaclass injection",
                 difficulty=10
             ),
-            
+
             # Multiple injection types
             AttackPattern(
                 DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.xpath_injection,
+                self.attack_generator.xpath_injection,
                 "XPath injection",
                 difficulty=7
             ),
             AttackPattern(
                 DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.nosql_injection,
+                self.attack_generator.nosql_injection,
                 "NoSQL injection",
                 difficulty=8
             ),
             AttackPattern(
                 DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.command_injection,
+                self.attack_generator.command_injection,
                 "Command injection",
                 difficulty=9
             ),
             AttackPattern(
                 DefenseType.SANITIZATION,
-                AdvancedAttackLibrary.template_injection,
+                self.attack_generator.template_injection,
                 "Template injection",
                 difficulty=10
             ),
         ]
-    
+
     def execute_advanced_suite(self) -> tuple:
         """Execute all advanced attacks"""
         exploits = []
         blocked_count = 0
-        
+
         print(f"\n🔴 LAUNCHING ADVANCED ATTACK SUITE (Generation {self.generation})")
         print(f"{'='*90}")
-        
+
         for pattern in self.advanced_patterns:
             try:
                 payload = pattern.payload_generator()
             except Exception as e:
                 print(f"  ⚠️  Payload generation error: {pattern.description}")
                 continue
-            
+
             blocked, reason = self.target.test_defense(pattern.defense_type, payload)
             pattern.record_attempt(not blocked)
-            
+
             severity = self._calculate_severity(pattern)
             exploit = Exploit(
                 vector=pattern.defense_type,
@@ -473,24 +333,24 @@ class AdvancedRedTeamExecutor:
                 blocked=blocked,
                 defense_reason=reason
             )
-            
+
             exploits.append(exploit)
-            
+
             if blocked:
                 blocked_count += 1
                 status = "✓ BLOCKED"
             else:
                 status = "✗ EXPLOITED"
-            
+
             print(f"  {status:12} | Diff:{pattern.difficulty:2d} | {pattern.description:40} | {reason[:30]}")
-        
+
         fitness = (blocked_count / len(exploits) * 100) if exploits else 0
-        
+
         print(f"{'='*90}")
         print(f"  Advanced Attack Results: {blocked_count}/{len(exploits)} blocked ({fitness:.1f}% defense)")
-        
+
         return exploits, blocked_count, len(exploits), fitness
-    
+
     def _calculate_severity(self, pattern: AttackPattern) -> SeverityLevel:
         """Calculate exploit severity based on difficulty"""
         if pattern.difficulty >= 9:
@@ -501,4 +361,3 @@ class AdvancedRedTeamExecutor:
             return SeverityLevel.MEDIUM
         else:
             return SeverityLevel.LOW
-
