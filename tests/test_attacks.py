@@ -1,104 +1,112 @@
 import unittest
 from unittest.mock import Mock
-from typing import Any
-from src.attacks.intelligence import AttackerIntelligence
-from src.attacks.advanced import AdaptiveAttackGenerator, AdvancedRedTeamExecutor
+from src.attacks.intelligence import (
+    AttackerIntelligence,
+    AttackVector,
+    PayloadCharacteristics,
+    DefenseProfile
+)
+from src.attacks.advanced import AdaptiveAttackGenerator
 from src.core.models import EvolvableSeed
 
 class TestAttackerIntelligence(unittest.TestCase):
 
     def setUp(self):
         self.intel = AttackerIntelligence()
+        self.sample_chars = PayloadCharacteristics(
+            vector=AttackVector.INJECTION,
+            size=100,
+            encoding_layers=1,
+            complexity=2,
+            obfuscation_level=5,
+            uses_quotes=True,
+            uses_special_chars=True,
+            is_polymorphic=False
+        )
 
-    def test_record_outcome(self):
-        """Test that attack outcomes are recorded correctly."""
-        self.intel.record_outcome("payload1", {"encoding": "base64"}, success=True)
-        self.intel.record_outcome("payload1", {"encoding": "base64"}, success=True)
-        self.intel.record_outcome("payload1", {"encoding": "unicode"}, success=False)
+    def test_record_attack_and_create_profile(self):
+        """Test that recording an attack creates a defense profile and updates history."""
+        self.assertNotIn("SANITIZATION", self.intel.defense_profiles)
 
-        self.assertEqual(self.intel.payload_effectiveness["payload1"]["success"], 2)
-        self.assertEqual(self.intel.payload_effectiveness["payload1"]["fail"], 1)
+        self.intel.record_attack("payload", self.sample_chars, True, "SANITIZATION", "Blocked by filter")
 
-        self.assertEqual(self.intel.characteristic_effectiveness["encoding:base64"]["success"], 2)
-        self.assertEqual(self.intel.characteristic_effectiveness["encoding:unicode"]["fail"], 1)
+        self.assertEqual(len(self.intel.attack_history), 1)
+        self.assertIn("SANITIZATION", self.intel.defense_profiles)
+        self.assertIsInstance(self.intel.defense_profiles["SANITIZATION"], DefenseProfile)
+        self.assertEqual(self.intel.defense_profiles["SANITIZATION"].times_encountered, 1)
 
-    def test_get_most_effective_characteristic(self):
-        """Test retrieval of the most effective characteristic."""
-        self.intel.record_outcome("p1", {"type": "sql"}, success=True)
-        self.intel.record_outcome("p2", {"type": "xss"}, success=True)
-        self.intel.record_outcome("p3", {"type": "xss"}, success=False)
+    def test_defense_profile_updates_on_outcome(self):
+        """Test that defense profile strength estimates change based on outcomes."""
+        self.intel.record_attack("p1", self.sample_chars, True, "SANITIZATION", "Blocked")
+        initial_strength = self.intel.defense_profiles["SANITIZATION"].strength_estimate
+        self.assertGreater(initial_strength, 0.5)
 
-        # SQL is 100% effective (1/1), XSS is 50% effective (1/2)
-        most_effective = self.intel.get_most_effective_characteristic()
-        self.assertEqual(most_effective, "type:sql")
+        self.intel.record_attack("p2", self.sample_chars, False, "SANITIZATION", "Bypassed")
+        final_strength = self.intel.defense_profiles["SANITIZATION"].strength_estimate
+        self.assertLess(final_strength, initial_strength)
 
-class TestAdaptiveAttackGenerator(unittest.TestCase):
+    def test_parameter_optimization_on_success(self):
+        """Test that parameters are reinforced on a successful attack."""
+        initial_params = self.intel.get_optimal_parameters(AttackVector.INJECTION)
 
-    def setUp(self):
-        # Mock intelligence module is sufficient for generator tests
-        mock_intel = Mock()
-        self.generator = AdaptiveAttackGenerator(mock_intel)
+        successful_chars = PayloadCharacteristics(
+            vector=AttackVector.INJECTION, size=200, encoding_layers=2,
+            complexity=3, obfuscation_level=7, uses_quotes=True,
+            uses_special_chars=True, is_polymorphic=False
+        )
 
-    def test_polymorphic_sql_injection(self):
-        """Test polymorphic SQL injection generation."""
-        payload = self.generator.polymorphic_sql_injection(gen=0, encoding_layers=2)
-        # Should be double base64 encoded
-        import base64
-        decoded1 = base64.b64decode(payload.encode()).decode()
-        decoded2 = base64.b64decode(decoded1.encode()).decode()
-        self.assertIn("OR", decoded2)
+        self.intel.record_attack("p_success", successful_chars, False, "INPUT_VALIDATION", "Bypassed")
 
-    def test_polymorphic_buffer_overflow(self):
-        """Test polymorphic buffer overflow with parameterization."""
-        payload = self.generator.polymorphic_buffer_overflow(gen=1, size=50)
-        self.assertEqual(len(payload), 50)
-        self.assertTrue(all(c == "B" for c in payload))
+        new_params = self.intel.get_optimal_parameters(AttackVector.INJECTION)
 
-    def test_nested_type_confusion(self):
-        """Test nested type confusion payload structure."""
+        self.assertNotEqual(initial_params, new_params)
+        self.assertGreater(new_params["encoding_layers"], initial_params["encoding_layers"])
+        self.assertGreater(new_params["complexity"], initial_params["complexity"])
 
-        def get_depth(p: Any) -> int:
-            """Recursively calculates the nesting depth of the payload."""
-            if not isinstance(p, (list, dict, set)):
-                return 0
+    def test_parameter_optimization_on_failure(self):
+        """Test that parameters are adjusted on a failed attack."""
+        initial_params = self.intel.get_optimal_parameters(AttackVector.INJECTION)
 
-            if isinstance(p, dict):
-                p = list(p.values())
+        self.intel.record_attack("p_fail", self.sample_chars, True, "SANITIZATION", "Blocked due to size")
 
-            max_child_depth = 0
-            for item in p:
-                max_child_depth = max(max_child_depth, get_depth(item))
+        new_params = self.intel.get_optimal_parameters(AttackVector.INJECTION)
 
-            return 1 + max_child_depth
+        self.assertLess(new_params["size"], initial_params["size"])
 
-        payload = self.generator.nested_type_confusion(depth=5)
+    def test_identify_weakest_defense(self):
+        """Test the identification of the weakest defense profile."""
+        self.intel.record_attack("p1", self.sample_chars, True, "STRONG_DEFENSE", "Blocked")
+        self.intel.record_attack("p2", self.sample_chars, False, "WEAK_DEFENSE", "Bypassed")
 
-        # The recursive function will accurately measure the depth
-        actual_depth = get_depth(payload)
-        self.assertEqual(actual_depth, 5)
+        weakest = self.intel.identify_weakest_defense()
+        self.assertEqual(weakest, "WEAK_DEFENSE")
 
-    def test_class_injection(self):
-        """Test that class injection returns an object with malicious methods."""
-        payload_obj = self.generator.class_injection()
-        self.assertEqual(str(payload_obj), "1' OR '1'='1")
-        self.assertEqual(len(payload_obj), 99999)
-
-class TestAdvancedRedTeamExecutor(unittest.TestCase):
+class TestAdaptiveAttackGeneratorIntegration(unittest.TestCase):
 
     def setUp(self):
-        # Requires a target seed and intelligence for initialization
-        mock_seed = Mock(spec=EvolvableSeed)
-        mock_intel = Mock(spec=AttackerIntelligence)
-        self.executor = AdvancedRedTeamExecutor(mock_seed, mock_intel)
+        self.intel = AttackerIntelligence()
+        self.generator = AdaptiveAttackGenerator(self.intel)
 
-    def test_initialization(self):
-        """Test that the executor initializes its attack patterns."""
-        self.assertGreater(len(self.executor.advanced_patterns), 0)
-        # Check if a few known patterns are present
-        descriptions = [p.description for p in self.executor.advanced_patterns]
-        self.assertIn("Polymorphic SQL injection", descriptions)
-        self.assertIn("Metaclass injection", descriptions)
-        self.assertIn("Chained overflow + state corruption", descriptions)
+    def test_generator_uses_optimized_parameters(self):
+        """
+        Test that the generator creates a larger payload after the intelligence
+        module optimizes for size.
+        """
+        # First, generate a baseline attack
+        _, initial_chars = self.generator.generate_overflow_attack(optimized=True)
+
+        # Now, simulate a scenario where larger attacks are successful
+        large_payload_chars = PayloadCharacteristics(
+            vector=AttackVector.OVERFLOW, size=5000, encoding_layers=0,
+            complexity=1, obfuscation_level=0, uses_quotes=False,
+            uses_special_chars=False, is_polymorphic=False
+        )
+        self.intel.record_attack("large_payload", large_payload_chars, False, "BOUNDS_ENFORCEMENT", "Bypassed")
+
+        # Generate a new attack, which should now be larger
+        _, new_chars = self.generator.generate_overflow_attack(optimized=True)
+
+        self.assertGreater(new_chars.size, initial_chars.size)
 
 if __name__ == '__main__':
     unittest.main()

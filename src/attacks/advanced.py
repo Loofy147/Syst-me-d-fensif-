@@ -11,12 +11,15 @@ Advanced attacks designed to bypass evolved defenses:
 - Zero-day simulations
 """
 
-from typing import Any, List, Dict
+from typing import Any, List, Dict, Tuple
 import random
 import base64
 
 from src.core.models import DefenseType, Exploit, SeverityLevel
 from src.attacks.models import AttackPattern
+from src.attacks.intelligence import (
+    AttackerIntelligence, AttackVector, PayloadCharacteristics
+)
 
 
 # ============================================================================
@@ -24,143 +27,315 @@ from src.attacks.models import AttackPattern
 # ============================================================================
 
 class AdaptiveAttackGenerator:
-    """Generates adaptive and parameterized attack payloads."""
-    def __init__(self, intelligence):
+    """Generates adaptive attacks based on intelligence"""
+
+    def __init__(self, intelligence: AttackerIntelligence):
         self.intelligence = intelligence
+        self.mutation_history: List[str] = []
 
-    def polymorphic_sql_injection(self, gen: int = 0, encoding_layers: int = 1) -> str:
-        """Generates a polymorphic and multi-layered SQL injection payload."""
-        variants = [
-            "1' OR '1'='1",
-            "1'/**/OR/**/1=1--",
-            "1'||'1'='1",
-            "1' UNION SELECT NULL--",
-            "admin'--",
+    def generate_injection_attack(self, optimized: bool = True) -> Tuple[Any, PayloadCharacteristics]:
+        """Generate SQL injection with adaptive parameters"""
+
+        if optimized:
+            params = self.intelligence.get_optimal_parameters(AttackVector.INJECTION)
+        else:
+            params = {"size": 50, "encoding_layers": 0, "complexity": 1, "obfuscation_level": 3}
+
+        # Base injection
+        base_payloads = [
+            "'; DROP TABLE users--",
+            "admin' OR '1'='1",
+            "1' UNION SELECT * FROM",
+            "'; DELETE FROM admin--",
         ]
-        payload = variants[gen % len(variants)]
 
-        for _ in range(encoding_layers):
-            payload = base64.b64encode(payload.encode()).decode()
+        payload = random.choice(base_payloads)
+
+        # Apply obfuscation
+        payload = self._apply_obfuscation(payload, params["obfuscation_level"])
+
+        # Apply encoding layers
+        payload = self._apply_encoding(payload, params["encoding_layers"])
+
+        # Adjust size
+        if len(payload) < params["size"]:
+            padding = "/*" + "A" * (params["size"] - len(payload) - 4) + "*/"
+            payload = payload + padding
+
+        chars = PayloadCharacteristics(
+            vector=AttackVector.INJECTION,
+            size=len(str(payload)),
+            encoding_layers=params["encoding_layers"],
+            complexity=1,
+            obfuscation_level=params["obfuscation_level"],
+            uses_quotes="'" in str(payload) or '"' in str(payload),
+            uses_special_chars=True,
+            is_polymorphic=False
+        )
+
+        return payload, chars
+
+    def generate_overflow_attack(self, optimized: bool = True) -> Tuple[Any, PayloadCharacteristics]:
+        """Generate buffer overflow with adaptive size"""
+
+        if optimized:
+            params = self.intelligence.get_optimal_parameters(AttackVector.OVERFLOW)
+        else:
+            params = {"size": 1000, "encoding_layers": 0, "complexity": 1, "obfuscation_level": 3}
+
+        # Generate overflow payload
+        patterns = ["A", "B", "X", "\x00", "\xff"]
+        pattern = random.choice(patterns)
+        payload = pattern * params["size"]
+
+        # Add malicious trailer
+        payload += "'; DROP--"
+
+        chars = PayloadCharacteristics(
+            vector=AttackVector.OVERFLOW,
+            size=len(payload),
+            encoding_layers=0,
+            complexity=1,
+            obfuscation_level=0,
+            uses_quotes=True,
+            uses_special_chars=True,
+            is_polymorphic=False
+        )
+
+        return payload, chars
+
+    def generate_type_confusion_attack(self, optimized: bool = True) -> Tuple[Any, PayloadCharacteristics]:
+        """Generate type confusion with adaptive complexity"""
+
+        if optimized:
+            params = self.intelligence.get_optimal_parameters(AttackVector.TYPE_CONFUSION)
+        else:
+            params = {"size": 100, "encoding_layers": 0, "complexity": 2, "obfuscation_level": 3}
+
+        # Build nested structure based on complexity
+        payload = {"malicious": "payload"}
+
+        for i in range(params["complexity"]):
+            payload = {"nested_" + str(i): payload}
+
+        # Add injection in deep layer
+        self._inject_deep(payload, "'; DROP TABLE--", params["complexity"])
+
+        chars = PayloadCharacteristics(
+            vector=AttackVector.TYPE_CONFUSION,
+            size=len(str(payload)),
+            encoding_layers=0,
+            complexity=params["complexity"],
+            obfuscation_level=params["obfuscation_level"],
+            uses_quotes=True,
+            uses_special_chars=False,
+            is_polymorphic=False
+        )
+
+        return payload, chars
+
+    def generate_encoding_attack(self, optimized: bool = True) -> Tuple[Any, PayloadCharacteristics]:
+        """Generate multi-layer encoded attack"""
+
+        if optimized:
+            params = self.intelligence.get_optimal_parameters(AttackVector.ENCODING)
+        else:
+            params = {"size": 100, "encoding_layers": 2, "complexity": 1, "obfuscation_level": 5}
+
+        payload = "'; DROP TABLE users--"
+
+        # Apply encoding layers
+        payload = self._apply_encoding(payload, params["encoding_layers"])
+
+        chars = PayloadCharacteristics(
+            vector=AttackVector.ENCODING,
+            size=len(payload),
+            encoding_layers=params["encoding_layers"],
+            complexity=1,
+            obfuscation_level=params["obfuscation_level"],
+            uses_quotes=False,  # Encoded
+            uses_special_chars=False,  # Encoded
+            is_polymorphic=False
+        )
+
+        return payload, chars
+
+    def generate_state_corruption_attack(self, optimized: bool = True) -> Tuple[Any, PayloadCharacteristics]:
+        """Generate state corruption attack"""
+
+        if optimized:
+            params = self.intelligence.get_optimal_parameters(AttackVector.STATE_CORRUPTION)
+        else:
+            params = {"size": 200, "encoding_layers": 0, "complexity": 3, "obfuscation_level": 4}
+
+        payload = {
+            "_protected": "corrupted",
+            "__proto__": {"isAdmin": True},
+            "state": {"internal": "compromised"}
+        }
+
+        # Add complexity
+        for i in range(params["complexity"]):
+            payload[f"nested_{i}"] = {"level": i, "data": payload.copy()}
+
+        chars = PayloadCharacteristics(
+            vector=AttackVector.STATE_CORRUPTION,
+            size=len(str(payload)),
+            encoding_layers=0,
+            complexity=params["complexity"],
+            obfuscation_level=params["obfuscation_level"],
+            uses_quotes=False,
+            uses_special_chars=True,
+            is_polymorphic=False
+        )
+
+        return payload, chars
+
+    def generate_polymorphic_attack(self, base_payload: str) -> Tuple[Any, PayloadCharacteristics]:
+        """Generate polymorphic variant"""
+
+        # Mutation strategies
+        mutations = [
+            lambda p: p.replace("'", '"'),  # Quote swap
+            lambda p: p.replace(" ", "/**/"),  # Comment injection
+            lambda p: p.upper() if random.random() > 0.5 else p.lower(),  # Case change
+            lambda p: p.replace("OR", "||"),  # Operator substitution
+            lambda p: p.replace("=", " LIKE "),  # Operator variation
+            lambda p: self._unicode_transform(p),  # Unicode tricks
+        ]
+
+        # Apply random mutations
+        payload = base_payload
+        for _ in range(random.randint(1, 3)):
+            mutation = random.choice(mutations)
+            payload = mutation(payload)
+
+        self.mutation_history.append(payload)
+
+        chars = PayloadCharacteristics(
+            vector=AttackVector.INJECTION,
+            size=len(payload),
+            encoding_layers=0,
+            complexity=1,
+            obfuscation_level=7,
+            uses_quotes="'" in payload or '"' in payload,
+            uses_special_chars=True,
+            is_polymorphic=True
+        )
+
+        return payload, chars
+
+    def generate_adaptive_campaign(self, count: int = 10) -> List[Tuple[str, Any, PayloadCharacteristics]]:
+        """Generate adaptive attack campaign"""
+
+        campaign = []
+
+        # Analyze defender's weakness
+        weakest = self.intelligence.identify_weakest_defense()
+
+        # Generate attacks targeting weakness
+        generators = [
+            ("injection", self.generate_injection_attack),
+            ("overflow", self.generate_overflow_attack),
+            ("type_confusion", self.generate_type_confusion_attack),
+            ("encoding", self.generate_encoding_attack),
+            ("state_corruption", self.generate_state_corruption_attack),
+        ]
+
+        for i in range(count):
+            # Bias towards weak defense
+            if weakest and "sanit" in weakest.lower() and random.random() > 0.3:
+                attack_type, generator = ("injection", self.generate_injection_attack)
+            elif weakest and "type" in weakest.lower() and random.random() > 0.3:
+                attack_type, generator = ("type_confusion", self.generate_type_confusion_attack)
+            elif weakest and "bounds" in weakest.lower() and random.random() > 0.3:
+                attack_type, generator = ("overflow", self.generate_overflow_attack)
+            else:
+                attack_type, generator = random.choice(generators)
+
+            payload, chars = generator(optimized=True)
+            campaign.append((attack_type, payload, chars))
+
+        return campaign
+
+    def _apply_obfuscation(self, payload: str, level: int) -> str:
+        """Apply obfuscation based on level"""
+
+        if level >= 3:
+            # Comment injection
+            payload = payload.replace(" ", "/**/")
+
+        if level >= 5:
+            # Case randomization
+            payload = ''.join(c.upper() if random.random() > 0.5 else c.lower() for c in payload)
+
+        if level >= 7:
+            # Unicode substitution
+            payload = self._unicode_transform(payload)
+
+        if level >= 9:
+            # Character building
+            payload = self._char_build(payload)
 
         return payload
 
-    def polymorphic_buffer_overflow(self, gen: int = 0, size: int = 1000):
-        """Generates a polymorphic buffer overflow payload with a tunable size."""
-        patterns = ["A", "B", "X", "\x00", "\xff", "🔴"]
-        pattern = patterns[gen % len(patterns)]
-        return pattern * size
+    def _apply_encoding(self, payload: str, layers: int) -> str:
+        """Apply encoding layers"""
 
-    # === Type Confusion Attacks ===
+        encoded = payload
 
-    def nested_type_confusion(self, depth: int = 3) -> Any:
-        """Creates a nested object with confusing types to test deep type checking."""
-        payload: Any = "initial_string"
-        for i in range(depth):
-            container_type = random.choice([list, set, dict])
-            if container_type == list:
-                payload = [payload, i]
-            elif container_type == set:
-                try:
-                    payload = {payload, i}
-                except TypeError:
-                    # Fallback to list if payload is not hashable
-                    payload = [payload, i]
-            elif container_type == dict:
-                payload = {f"key_{i}": payload}
-        return payload
+        for layer in range(layers):
+            if layer % 3 == 0:
+                # Base64
+                encoded = base64.b64encode(encoded.encode()).decode()
+            elif layer % 3 == 1:
+                # URL encoding
+                encoded = self._url_encode(encoded)
+            else:
+                # Hex encoding
+                encoded = self._hex_encode(encoded)
 
-    def generator_type_confusion(self) -> Any:
-        """Uses a generator to bypass simple type checks that don't handle iterators."""
-        def malicious_generator():
-            yield "part1"
-            yield 2
-            yield {"command": "delete", "target": "*"}
-        return malicious_generator()
+        return encoded
 
-    def class_injection(self) -> Any:
-        """Defines a class with malicious behavior in its methods."""
-        class MaliciousPayload:
-            def __str__(self):
-                return "1' OR '1'='1"
-            def __len__(self):
-                return 99999
-        return MaliciousPayload()
+    def _inject_deep(self, obj: Dict, value: str, depth: int):
+        """Inject value at specific depth"""
+        if depth <= 0:
+            obj["injected"] = value
+            return
 
-    # === Logic Bombs ===
+        for key, val in obj.items():
+            if isinstance(val, dict):
+                self._inject_deep(val, value, depth - 1)
+                break
 
-    def time_based_bomb(self, generation: int) -> Dict:
-        """A logic bomb that triggers based on an arbitrary 'time' value (generation)."""
-        trigger_condition = (generation > 0 and generation % 10 == 0)
-        return {"execute": trigger_condition, "payload": "DELETE *"}
+    def _unicode_transform(self, text: str) -> str:
+        """Transform using unicode tricks"""
+        transforms = {
+            "O": "Ο",  # Greek Omicron
+            "A": "Α",  # Greek Alpha
+            "E": "Ε",  # Greek Epsilon
+            "o": "ο",  # Greek lowercase omicron
+            "a": "α",  # Greek lowercase alpha
+        }
 
-    def length_based_bomb(self) -> Dict:
-        """A logic bomb where declared length mismatches actual length."""
-        return {"declared_length": 1000, "payload": "A" * 20}
+        for old, new in transforms.items():
+            if random.random() > 0.5:
+                text = text.replace(old, new)
 
-    # === Chained Exploits ===
+        return text
 
-    def chained_type_and_injection(self) -> Any:
-        """First passes a type check, then delivers an injection."""
-        return [1, 2, "admin'--"]
+    def _char_build(self, text: str) -> str:
+        """Build string using character codes"""
+        # Simulated - in real SQL: CHAR(65)+CHAR(66)...
+        return f"CHAR({','.join(str(ord(c)) for c in text[:10])})"
 
-    def chained_overflow_and_state(self) -> Dict:
-        """Combines a buffer overflow with a state-corrupting instruction."""
-        return {"buffer": "A" * 5000, "state_key": "__admin__", "state_value": True}
+    def _url_encode(self, text: str) -> str:
+        """URL encode"""
+        return ''.join(f'%{ord(c):02X}' if c in "';\"-" else c for c in text)
 
-    # === Zero-Day Simulations ===
-
-    def memory_exhaustion_attack(self, scale: int = 1000000) -> List:
-        """Attempts to exhaust memory by creating a massive list."""
-        try:
-            return ["A"] * scale
-        except MemoryError:
-            return ["MemoryError"]
-
-    def prototype_pollution(self) -> Dict:
-        """Simulates prototype pollution by attempting to modify shared objects."""
-        return {"__class__": {"__init__": {"__globals__": {"is_admin": True}}}}
-
-    def format_string_exploit(self) -> str:
-        """Uses format string specifiers to read/write memory."""
-        return "User: %s%s%s%n"
-
-    # === Advanced State Manipulation ===
-
-    def property_hijacking(self) -> Any:
-        """Hijacks a property to execute code upon access."""
-        class HijackedProp:
-            @property
-            def name(self):
-                return "1' OR '1'='1"
-        return HijackedProp()
-
-    def metaclass_injection(self) -> Any:
-        """Injects a malicious metaclass to alter class creation."""
-        class MaliciousMeta(type):
-            def __new__(cls, name, bases, dct):
-                dct['injected_attribute'] = '1; rm -rf /'
-                return super().__new__(cls, name, bases, dct)
-        class BenignClass(metaclass=MaliciousMeta):
-            pass
-        return BenignClass
-
-    # === Advanced Injection Vectors ===
-
-    def xpath_injection(self) -> str:
-        """Injects a payload to exploit XPath queries."""
-        return "' or 1=1 or ''='"
-
-    def nosql_injection(self) -> Dict:
-        """Injects a payload for NoSQL databases using query operators."""
-        return {"$ne": ""}
-
-    def command_injection(self) -> str:
-        """Injects a shell command."""
-        return "; ls /"
-
-    def template_injection(self) -> str:
-        """Injects code into a template engine (SSTI)."""
-        return "{{ ''.__class__.__mro__[1].__subclasses__()[133]('whoami', shell=True, stdout=-1).communicate() }}"
+    def _hex_encode(self, text: str) -> str:
+        """Hex encode"""
+        return ''.join(f'\\x{ord(c):02x}' for c in text)
 
 
 # ============================================================================
@@ -182,125 +357,40 @@ class AdvancedRedTeamExecutor:
         """Initialize advanced attack patterns"""
 
         self.advanced_patterns = [
-            # Polymorphic attacks
             AttackPattern(
                 DefenseType.SANITIZATION,
-                lambda: self.attack_generator.polymorphic_sql_injection(self.generation),
-                "Polymorphic SQL injection",
-                difficulty=7
-            ),
-            AttackPattern(
-                DefenseType.BOUNDS_ENFORCEMENT,
-                lambda: self.attack_generator.polymorphic_buffer_overflow(self.generation),
-                "Polymorphic buffer overflow",
-                difficulty=8
-            ),
-
-            # Advanced type confusion
-            AttackPattern(
-                DefenseType.TYPE_CHECKING,
-                self.attack_generator.nested_type_confusion,
-                "Nested type confusion",
-                difficulty=6
-            ),
-            AttackPattern(
-                DefenseType.TYPE_CHECKING,
-                self.attack_generator.generator_type_confusion,
-                "Generator type confusion",
-                difficulty=7
-            ),
-            AttackPattern(
-                DefenseType.TYPE_CHECKING,
-                self.attack_generator.class_injection,
-                "Custom class injection",
-                difficulty=8
-            ),
-
-            # Logic bombs
-            AttackPattern(
-                DefenseType.INPUT_VALIDATION,
-                lambda: self.attack_generator.time_based_bomb(self.generation),
-                "Time-based logic bomb",
+                lambda: self.attack_generator.generate_injection_attack(optimized=True),
+                "Adaptive SQL Injection",
                 difficulty=8
             ),
             AttackPattern(
                 DefenseType.BOUNDS_ENFORCEMENT,
-                self.attack_generator.length_based_bomb,
-                "Length-spoofing bomb",
-                difficulty=9
-            ),
-
-            # Chained exploits
-            AttackPattern(
-                DefenseType.TYPE_CHECKING,
-                self.attack_generator.chained_type_and_injection,
-                "Chained type + injection",
-                difficulty=9
-            ),
-            AttackPattern(
-                DefenseType.STATE_PROTECTION,
-                self.attack_generator.chained_overflow_and_state,
-                "Chained overflow + state corruption",
-                difficulty=9
-            ),
-
-            # Zero-day simulations
-            AttackPattern(
-                DefenseType.BOUNDS_ENFORCEMENT,
-                self.attack_generator.memory_exhaustion_attack,
-                "Memory exhaustion attack",
-                difficulty=10
-            ),
-            AttackPattern(
-                DefenseType.STATE_PROTECTION,
-                self.attack_generator.prototype_pollution,
-                "Prototype pollution",
-                difficulty=9
-            ),
-            AttackPattern(
-                DefenseType.SANITIZATION,
-                self.attack_generator.format_string_exploit,
-                "Format string exploit",
+                lambda: self.attack_generator.generate_overflow_attack(optimized=True),
+                "Adaptive Buffer Overflow",
                 difficulty=8
             ),
-
-            # Advanced state manipulation
             AttackPattern(
-                DefenseType.STATE_PROTECTION,
-                self.attack_generator.property_hijacking,
-                "Property hijacking",
+                DefenseType.TYPE_CHECKING,
+                lambda: self.attack_generator.generate_type_confusion_attack(optimized=True),
+                "Adaptive Type Confusion",
                 difficulty=9
             ),
             AttackPattern(
-                DefenseType.TYPE_CHECKING,
-                self.attack_generator.metaclass_injection,
-                "Metaclass injection",
-                difficulty=10
-            ),
-
-            # Multiple injection types
-            AttackPattern(
                 DefenseType.SANITIZATION,
-                self.attack_generator.xpath_injection,
-                "XPath injection",
+                lambda: self.attack_generator.generate_encoding_attack(optimized=True),
+                "Adaptive Encoding Attack",
                 difficulty=7
             ),
             AttackPattern(
-                DefenseType.SANITIZATION,
-                self.attack_generator.nosql_injection,
-                "NoSQL injection",
-                difficulty=8
-            ),
-            AttackPattern(
-                DefenseType.SANITIZATION,
-                self.attack_generator.command_injection,
-                "Command injection",
+                DefenseType.STATE_PROTECTION,
+                lambda: self.attack_generator.generate_state_corruption_attack(optimized=True),
+                "Adaptive State Corruption",
                 difficulty=9
             ),
             AttackPattern(
                 DefenseType.SANITIZATION,
-                self.attack_generator.template_injection,
-                "Template injection",
+                lambda: self.attack_generator.generate_polymorphic_attack("admin' OR '1'='1"),
+                "Polymorphic Mutation Attack",
                 difficulty=10
             ),
         ]
@@ -315,13 +405,18 @@ class AdvancedRedTeamExecutor:
 
         for pattern in self.advanced_patterns:
             try:
-                payload = pattern.payload_generator()
+                # New generator returns payload and characteristics
+                payload, chars = pattern.payload_generator()
             except Exception as e:
                 print(f"  ⚠️  Payload generation error: {pattern.description}")
                 continue
 
             blocked, reason = self.target.test_defense(pattern.defense_type, payload)
-            pattern.record_attempt(not blocked)
+
+            # Record detailed outcome with the new intelligence module
+            self.attacker_intelligence.record_attack(
+                payload, chars, blocked, pattern.defense_type.name, reason
+            )
 
             severity = self._calculate_severity(pattern)
             exploit = Exploit(

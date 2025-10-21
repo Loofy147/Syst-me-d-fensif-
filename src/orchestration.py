@@ -76,7 +76,7 @@ class AutonomousLearningSystem:
             results = []
             blocked_count = 0
 
-            for scenario_name, attack_type, payload in campaign:
+            for scenario_name, attack_type, payload, chars in campaign:
                 # Map attack_type to DefenseType
                 defense_type = self._map_to_defense_type(attack_type)
 
@@ -89,7 +89,9 @@ class AutonomousLearningSystem:
                 )
 
                 # Feed back to attack scenarios
-                self.attack_orchestrator.learn_from_results(scenario_name, payload, blocked)
+                self.attack_orchestrator.learn_from_results(
+                    scenario_name, payload, blocked, defense_type.name, reason, chars
+                )
 
                 results.append({
                     "scenario": scenario_name,
@@ -120,6 +122,10 @@ class AutonomousLearningSystem:
 
             # Display defense state
             self._print_defense_state()
+
+            # Display attacker intelligence state
+            self.attacker_intelligence.next_generation()
+            self.attacker_intelligence.print_intelligence_state()
 
             # Learning history
             self.learning_history.append({
