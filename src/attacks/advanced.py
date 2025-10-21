@@ -15,8 +15,8 @@ from typing import Any, List, Dict
 import random
 import base64
 
-from core import DefenseType, Exploit, SeverityLevel
-from red_team import AttackPattern
+from src.core.models import DefenseType, Exploit, SeverityLevel
+from src.attacks.models import AttackPattern
 
 
 # ============================================================================
@@ -24,15 +24,15 @@ from red_team import AttackPattern
 # ============================================================================
 
 class AdvancedAttackLibrary:
-    """Sophisticated attack patterns"""
-    
+    """A library of sophisticated attack patterns."""
+
     # ========================================================================
     # POLYMORPHIC ATTACKS - Change shape each execution
     # ========================================================================
     
     @staticmethod
-    def polymorphic_sql_injection(gen: int = 0):
-        """SQL injection that mutates each generation"""
+    def polymorphic_sql_injection(gen: int = 0) -> str:
+        """Generates a polymorphic SQL injection payload."""
         variants = [
             "1' OR '1'='1",
             "1'/**/OR/**/1=1--",
@@ -502,136 +502,3 @@ class AdvancedRedTeamExecutor:
         else:
             return SeverityLevel.LOW
 
-
-# ============================================================================
-# ADVANCED EVOLUTION WITH BREAKTHROUGH DEFENSES
-# ============================================================================
-
-class BreakthroughDefenseEvolution:
-    """Evolves defenses to handle advanced attacks"""
-    
-    @staticmethod
-    def evolve_encoding_detection(seed):
-        """Add encoding detection capability"""
-        # Strengthen sanitization significantly
-        seed.strengthen_defense(DefenseType.SANITIZATION, 5)
-        return "🧬 Evolved: Multi-layer encoding detection"
-    
-    @staticmethod
-    def evolve_type_depth_analysis(seed):
-        """Add deep type inspection"""
-        seed.strengthen_defense(DefenseType.TYPE_CHECKING, 5)
-        return "🧬 Evolved: Deep type inspection (nested structures)"
-    
-    @staticmethod
-    def evolve_state_lockdown(seed):
-        """Add aggressive state protection"""
-        seed.strengthen_defense(DefenseType.STATE_PROTECTION, 5)
-        seed.activate_defense(DefenseType.CRYPTOGRAPHY)
-        return "🧬 Evolved: State lockdown + cryptographic validation"
-    
-    @staticmethod
-    def evolve_resource_limits(seed):
-        """Add resource exhaustion protection"""
-        seed.strengthen_defense(DefenseType.BOUNDS_ENFORCEMENT, 5)
-        seed.activate_defense(DefenseType.RATE_LIMITING)
-        return "🧬 Evolved: Resource limits + rate limiting"
-    
-    @staticmethod
-    def apply_all_evolutions(seed) -> List[str]:
-        """Apply all breakthrough evolutions"""
-        evolutions = []
-        evolutions.append(BreakthroughDefenseEvolution.evolve_encoding_detection(seed))
-        evolutions.append(BreakthroughDefenseEvolution.evolve_type_depth_analysis(seed))
-        evolutions.append(BreakthroughDefenseEvolution.evolve_state_lockdown(seed))
-        evolutions.append(BreakthroughDefenseEvolution.evolve_resource_limits(seed))
-        return evolutions
-
-
-# ============================================================================
-# MAIN ADVANCED ATTACK EXECUTION
-# ============================================================================
-
-def run_advanced_attack_scenario():
-    """Run complete advanced attack scenario"""
-    
-    from core import EvolvableSeed
-    from orchestrator import EvolutionOrchestrator
-    
-    print("\n" + "="*90)
-    print("🔴 ADVANCED ATTACK SCENARIO - TESTING EVOLVED SYSTEM LIMITS")
-    print("="*90)
-    
-    # First, evolve the system using basic attacks
-    print("\n📊 PHASE 1: Basic Evolution (Building Strong Defense)")
-    print("-"*90)
-    seed = EvolvableSeed("HardenedSystem")
-    orchestrator = EvolutionOrchestrator(seed, max_generations=5)
-    
-    for gen in range(5):
-        report = orchestrator.run_generation(gen)
-        print(f"  Gen {gen}: Fitness {report.fitness_score:.1f}%")
-        if report.fitness_score >= 100:
-            break
-    
-    print(f"\n✓ Basic defense achieved: {report.fitness_score:.1f}% fitness")
-    
-    # Now attack with advanced patterns
-    print("\n" + "="*90)
-    print("🔴 PHASE 2: Advanced Attack Wave")
-    print("="*90)
-    
-    advanced_red_team = AdvancedRedTeamExecutor(seed)
-    
-    print("\nInitial Advanced Attack:")
-    exploits1, blocked1, total1, fitness1 = advanced_red_team.execute_advanced_suite()
-    
-    # Discover weaknesses
-    print(f"\n📊 Analysis:")
-    print(f"  Advanced attacks blocked: {blocked1}/{total1} ({fitness1:.1f}%)")
-    
-    vulnerable_count = total1 - blocked1
-    if vulnerable_count > 0:
-        print(f"  ⚠️  CRITICAL: {vulnerable_count} advanced exploits successful!")
-        print(f"\n🔧 Applying breakthrough evolution...")
-        
-        evolutions = BreakthroughDefenseEvolution.apply_all_evolutions(seed)
-        for evolution in evolutions:
-            print(f"  {evolution}")
-        
-        # Re-attack after evolution
-        advanced_red_team.generation = 1
-        print(f"\n🔴 Re-attacking after evolution:")
-        exploits2, blocked2, total2, fitness2 = advanced_red_team.execute_advanced_suite()
-        
-        print(f"\n📊 Post-Evolution Analysis:")
-        print(f"  Before evolution: {fitness1:.1f}% defense")
-        print(f"  After evolution:  {fitness2:.1f}% defense")
-        print(f"  Improvement: +{fitness2 - fitness1:.1f}%")
-        
-        if fitness2 >= 90:
-            print(f"\n✅ Strong defense against advanced attacks!")
-        elif fitness2 >= 70:
-            print(f"\n⚠️  Moderate defense - some advanced attacks still succeed")
-        else:
-            print(f"\n❌ Weak against advanced attacks - needs more evolution")
-    else:
-        print(f"\n✅ PERFECT: All advanced attacks blocked!")
-    
-    # Final report
-    print(f"\n{'='*90}")
-    print("FINAL DEFENSE STATE")
-    print(f"{'='*90}")
-    snapshot = seed.get_defense_snapshot()
-    for name, state in snapshot.items():
-        status = "✓" if state['active'] else "✗"
-        bar = "█" * state['strength'] + "░" * (10 - state['strength'])
-        print(f"  {status} {name:25} {bar} ({state['strength']:2d}/10)")
-    
-    print(f"\n{'='*90}")
-    print("ADVANCED ATTACK SCENARIO COMPLETE")
-    print(f"{'='*90}\n")
-
-
-if __name__ == "__main__":
-    run_advanced_attack_scenario()

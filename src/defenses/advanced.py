@@ -12,7 +12,8 @@ Implements sophisticated defenses for advanced attack patterns:
 import base64
 import sys
 from typing import Any, Tuple
-from core import DefenseMechanism, DefenseConfig, DefenseType
+from src.core.models import DefenseMechanism, DefenseConfig, DefenseType
+from src.logger import logger
 
 
 # ============================================================================
@@ -268,11 +269,9 @@ class DeepStateProtectionDefense(DefenseMechanism):
 def upgrade_to_ultimate_defenses(seed):
     """Upgrade seed to use ultimate defense mechanisms"""
     
-    print(f"\n{'='*90}")
-    print("🛡️  UPGRADING TO ULTIMATE DEFENSE FRAMEWORK")
-    print(f"{'='*90}\n")
-    
-    from core import DefenseFramework
+    logger.info(f"\n{'='*90}")
+    logger.info("🛡️  UPGRADING TO ULTIMATE DEFENSE FRAMEWORK")
+    logger.info(f"{'='*90}\n")
     
     # Replace defense mechanisms
     upgrades = []
@@ -310,104 +309,16 @@ def upgrade_to_ultimate_defenses(seed):
     upgrades.append("✓ Upgraded STATE_PROTECTION → Deep graph inspection")
     
     for upgrade in upgrades:
-        print(f"  {upgrade}")
+        logger.info(f"  {upgrade}")
     
     # Strengthen all upgraded defenses
-    print(f"\n  🔧 Strengthening upgraded defenses...")
+    logger.info(f"\n  🔧 Strengthening upgraded defenses...")
     seed.strengthen_defense(DefenseType.SANITIZATION, 3)
     seed.strengthen_defense(DefenseType.TYPE_CHECKING, 3)
     seed.strengthen_defense(DefenseType.BOUNDS_ENFORCEMENT, 3)
     seed.strengthen_defense(DefenseType.STATE_PROTECTION, 3)
     
-    print(f"  ✓ All defenses strengthened by +3\n")
+    logger.info(f"  ✓ All defenses strengthened by +3\n")
     
     return upgrades
 
-
-# ============================================================================
-# FINAL BATTLE - Ultimate Defenses vs Advanced Attacks
-# ============================================================================
-
-def run_ultimate_defense_test():
-    """Run ultimate defense against advanced attacks"""
-    
-    from core import EvolvableSeed
-    from orchestrator import EvolutionOrchestrator
-    from advanced_attacks import AdvancedRedTeamExecutor, BreakthroughDefenseEvolution
-    
-    print("\n" + "="*90)
-    print("⚔️  FINAL BATTLE: ULTIMATE DEFENSES vs ADVANCED ATTACKS")
-    print("="*90)
-    
-    # Evolve basic system
-    print("\n📊 Stage 1: Basic Evolution")
-    seed = EvolvableSeed("UltimateDefenseSystem")
-    orchestrator = EvolutionOrchestrator(seed, max_generations=4)
-    for gen in range(4):
-        report = orchestrator.run_generation(gen)
-        if report.fitness_score >= 100:
-            break
-    
-    print(f"✓ Basic evolution complete: {report.fitness_score:.1f}% fitness\n")
-    
-    # First advanced attack
-    print("="*90)
-    print("🔴 Stage 2: Advanced Attack (Before Ultimate Defenses)")
-    print("="*90)
-    advanced_red_team = AdvancedRedTeamExecutor(seed)
-    exploits1, blocked1, total1, fitness1 = advanced_red_team.execute_advanced_suite()
-    
-    # Apply breakthrough evolution
-    print(f"\n🔧 Stage 3: Applying Breakthrough Evolution")
-    BreakthroughDefenseEvolution.apply_all_evolutions(seed)
-    
-    # Upgrade to ultimate defenses
-    upgrade_to_ultimate_defenses(seed)
-    
-    # Final attack
-    print("="*90)
-    print("🔴 Stage 4: Advanced Attack (After Ultimate Defenses)")
-    print("="*90)
-    advanced_red_team.generation = 1
-    exploits2, blocked2, total2, fitness2 = advanced_red_team.execute_advanced_suite()
-    
-    # Final analysis
-    print(f"\n{'='*90}")
-    print("FINAL BATTLE RESULTS")
-    print(f"{'='*90}")
-    print(f"\n📊 Defense Progression:")
-    print(f"  Stage 1 (Basic):              100.0% vs basic attacks")
-    print(f"  Stage 2 (vs Advanced):         {fitness1:5.1f}% defense")
-    print(f"  Stage 3 (Breakthrough):        ~65.0% defense (estimated)")
-    print(f"  Stage 4 (Ultimate Defenses):   {fitness2:5.1f}% defense")
-    print(f"\n  Total Improvement: +{fitness2 - fitness1:.1f}%")
-    
-    remaining = total2 - blocked2
-    print(f"\n⚔️  Attack Results:")
-    print(f"  Advanced attacks blocked: {blocked2}/{total2}")
-    print(f"  Exploits remaining: {remaining}")
-    
-    if remaining == 0:
-        print(f"\n🏆 VICTORY: All advanced attacks defeated!")
-    elif fitness2 >= 90:
-        print(f"\n✅ SUCCESS: Strong defense against advanced attacks")
-        print(f"  Remaining vulnerabilities: {remaining} (acceptable)")
-    elif fitness2 >= 75:
-        print(f"\n⚠️  MODERATE: Good defense but improvements needed")
-    else:
-        print(f"\n❌ VULNERABLE: More evolution required")
-    
-    # Show remaining exploits
-    if remaining > 0:
-        print(f"\n🔍 Remaining Vulnerabilities:")
-        for exploit in exploits2:
-            if not exploit.blocked:
-                print(f"  ✗ {exploit.description} (Difficulty: {exploit.difficulty})")
-    
-    print(f"\n{'='*90}")
-    print("ULTIMATE DEFENSE TEST COMPLETE")
-    print(f"{'='*90}\n")
-
-
-if __name__ == "__main__":
-    run_ultimate_defense_test()
