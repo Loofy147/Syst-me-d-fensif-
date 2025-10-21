@@ -2,6 +2,12 @@
 
 The Autonomous Learning System is designed with a modular architecture that separates concerns and allows for easy extension. The system is composed of the following key components:
 
+## Architectural Diagram
+
+A detailed architectural diagram is available in the `docs/defense_architecture.puml` file. This diagram provides a visual representation of the system's components and their interactions.
+
+To render the diagram, you can use the PlantUML extension for your IDE (e.g., VS Code) or the online PlantUML editor at [plantuml.com](http://www.plantuml.com/plantuml).
+
 ## Core
 
 The `core` module provides the fundamental building blocks of the system. It defines the data structures and classes that are used throughout the application, such as `EvolvableSeed`, `DefenseType`, and `AttackPattern`.

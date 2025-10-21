@@ -1,0 +1,43 @@
+@startuml ' PlantUML diagram for "Defense Architecture — One‑Page" ' Documentation-as-code friendly .puml file (check into git)
+
+skinparam monochrome false skinparam shadowing false skinparam dpi 150
+
+title Defense Architecture — One‑Page (Zero Trust, Runtime Protections, DevSecOps, Telemetry)
+
+package "Perimeter & Ingest" as PERIMETER { component DNS_Filter as DNS component WAF_API_GW as WAF component DDoS_Mitigation as DDOS }
+
+package "Identity & Access" as IDP { component IdP_MFA as IDP_MFA component RBAC_JIT as RBAC }
+
+package "CI/CD / Supply Chain" as CICD { component SAST as SAST component DAST as DAST component SCA as SCA component SBOM_Signing as SBOM component Artifact_Signing as ARTIFACT }
+
+package "Runtime & App Plane" as RUNTIME { node "K8s / Container Cluster" as CLUSTER { folder "App Tier" { component "App Container(s)\n(services)" as APP component "Sidecar RASP\n(application instrumentation)" as RASP } component "EDR / XDR Agent" as EDR component "Resource Controls\n(cgroups, ulimits)" as RESRC } database "Primary DB / Data Store" as DB }
+
+package "Analysis & Response" as ANALYSIS { component Sandbox as SANDBOX component Fuzzer as FUZZER component SIEM as SIEM component SOAR as SOAR component MemorySnapshotStore as MEMSTORE }
+
+' Runtime protections and hardening component ASLR_DEP as MEM_HARDENING component IntegrityAttestation as INTEGRITY
+
+' Connections DNS --> WAF : "filter ingested requests / IOC feed" WAF --> DDOS : "WAF rules + rate limits" WAF --> IDP_MFA : "auth + conditional access (API gateway)" WAF --> CLUSTER API -> WAF
+
+IDP_MFA --> RBAC : "issue token / claims" RBAC --> APP : "scoped credentials / JIT access"
+
+' CI/CD pipeline ARTIFACT --> SAST ARTIFACT --> DAST ARTIFACT --> SCA SBOM --> ARTIFACT SAST --> ARTIFACT : "block on high/critical" DAST --> ARTIFACT : "feedback to dev" ARTIFACT --> CLUSTER : "signed artifacts / verified deploy"
+
+' Runtime protections ASLR_DEP --> CLUSTER INTEGRITY --> DB RESRC --> CLUSTER EDR --> SIEM RASP --> SIEM
+
+' Analysis & response flows CLUSTER --> SANDBOX : "suspicious payloads / detonation" SANDBOX --> SIEM : "dynamic analysis results / IOCs" FUZZER --> SANDBOX : "fuzz inputs" SIEM --> SOAR : "alerts / automated playbooks" SOAR --> CLUSTER : "isolate host / quarantine/container" SOAR --> ARTIFACT : "revoke artifact / block signature" MEMSTORE --> SIEM : "on-demand memory snapshots"
+
+' Legend / Notes note right of PERIMETER Perimeter controls: DNS filtering, WAF, API Gateway, and DDoS mitigation. Ingest protections to stop encoded/obfuscated payloads early. end note
+
+note left of CICD CI/CD gates: SAST, DAST, SCA, SBOM and Artifact Signing. Prevents untrusted deserialization and ensures provenance. end note
+
+note bottom of RUNTIME Runtime protections: RASP (sidecar), EDR/XDR agents, resource limits (cgroups/ulimits), ASLR/DEP, and integrity checks. end note
+
+note bottom of ANALYSIS Analysis: Sandbox detonation lab, fuzzers, memory snapshot store, SIEM for telemetry aggregation, SOAR for automated response. end note
+
+' Threat mapping overlay (compact) rectangle "Threats (examples)" as THREATS { TH1 : Polymorphic payloads TH2 : Multi-layer encoding TH3 : Magic method / metaclass injection TH4 : Logic bombs TH5 : Memory exhaustion / DoS TH6 : State corruption TH7 : Zero-day simulations }
+
+THREATS ..> SANDBOX : "detonate & analyze" THREATS ..> SAST : "static detection patterns" THREATS ..> RASP : "runtime behavioral indicators" THREATS ..> SIEM : "telemetry & anomaly detection"
+
+' Styling for easier reading skinparam componentStyle rectangle
+
+@enduml

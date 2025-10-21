@@ -65,6 +65,10 @@ class EvolvableSeed:
         """Activates a given defense mechanism."""
         self.defense_framework.activate_defense(defense_type)
 
+    def decay_defense_strength(self, defense_type: DefenseType, amount: int = 1):
+        """Decays a given defense mechanism by a given amount."""
+        self.defense_framework.decay_defense_strength(defense_type, amount)
+
     def get_defense_snapshot(self) -> Dict[str, Any]:
         """Returns a snapshot of the current state of the defense framework."""
         return self.defense_framework.get_snapshot()
@@ -92,6 +96,13 @@ class DefenseFramework:
     def activate_defense(self, defense_type: DefenseType):
         if defense_type in self.defenses:
             self.defenses[defense_type].config.active = True
+
+    def decay_defense_strength(self, defense_type: DefenseType, amount: int = 1):
+        """Gradually reduces the strength of a defense."""
+        if defense_type in self.defenses:
+            self.defenses[defense_type].config.strength = max(
+                1, self.defenses[defense_type].config.strength - amount
+            )
 
     def get_snapshot(self) -> Dict[str, Any]:
         return {

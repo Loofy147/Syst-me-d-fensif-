@@ -137,6 +137,10 @@ class AutonomousLearningSystem:
                         if principle_id in self.intelligence.knowledge_base.principles:
                             del self.intelligence.knowledge_base.principles[principle_id]
 
+            # Decay defense strengths
+            for defense_type in DefenseType:
+                self.seed.decay_defense_strength(defense_type)
+
         # Final analysis
         self._print_final_analysis()
 
