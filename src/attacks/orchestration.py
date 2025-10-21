@@ -10,12 +10,14 @@ Sophisticated attack campaigns that combine multiple techniques:
 - Context-aware mutations
 """
 
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 from dataclasses import dataclass
 from enum import Enum
 import random
 from src.core.models import DefenseType
 from src.logger import logger
+from src.attacks.advanced import AdvancedRedTeamExecutor
+from src.attacks.intelligence import PayloadCharacteristics
 
 
 class AttackPhase(Enum):
@@ -520,13 +522,64 @@ class SideChannelAnalysisScenario:
         return probes
 
 # ============================================================================
+# SCENARIO 9: THE ADAPTIVE ARSENAL
+# ============================================================================
+
+class AdaptiveArsenalScenario:
+    """
+    Injects a wave of advanced, adaptive attacks from the main Red Team executor.
+    This scenario acts as a bridge, bringing the most sophisticated attacks
+    into the orchestrated campaign.
+    """
+    def __init__(self, red_team_executor: AdvancedRedTeamExecutor):
+        self.red_team_executor = red_team_executor
+
+    def generate_adaptive_wave(self, generation: int, num_attacks: int = 5) -> List[Tuple[str, Any, PayloadCharacteristics]]:
+        """
+        Selects a diverse set of high-difficulty adaptive attacks.
+        Returns the payload and its characteristics.
+        """
+        self.red_team_executor.generation = generation
+
+        all_patterns = self.red_team_executor.advanced_patterns
+        high_difficulty_patterns = [p for p in all_patterns if p.difficulty >= 8]
+
+        selected_patterns = []
+        seen_types = set()
+        for p in sorted(high_difficulty_patterns, key=lambda x: x.difficulty, reverse=True):
+            if p.defense_type not in seen_types:
+                selected_patterns.append(p)
+                seen_types.add(p.defense_type)
+
+        if len(selected_patterns) < num_attacks:
+            remaining_patterns = [p for p in all_patterns if p not in selected_patterns]
+            selected_patterns.extend(
+                random.sample(
+                    remaining_patterns,
+                    min(len(remaining_patterns), num_attacks - len(selected_patterns))
+                )
+            )
+
+        attack_wave = []
+        for pattern in selected_patterns[:num_attacks]:
+            try:
+                payload, chars = pattern.payload_generator()
+                attack_type = pattern.defense_type.name.lower()
+                attack_wave.append((attack_type, payload, chars))
+            except Exception:
+                continue
+
+        return attack_wave
+
+# ============================================================================
 # SCENARIO ORCHESTRATOR
 # ============================================================================
 
 class ScenarioOrchestrator:
     """Coordinates multiple attack scenarios"""
     
-    def __init__(self):
+    def __init__(self, red_team_executor: AdvancedRedTeamExecutor):
+        self.red_team_executor = red_team_executor
         self.scenarios = {
             "polymorphic": PolymorphicTransformerScenario(),
             "layered_siege": LayeredSiegeScenario(),
@@ -536,89 +589,73 @@ class ScenarioOrchestrator:
             "evolutionary": EvolutionaryArmsRaceScenario(),
             "metamorphic": MetamorphicPayloadScenario(),
             "side_channel": SideChannelAnalysisScenario(),
+            "adaptive_arsenal": AdaptiveArsenalScenario(red_team_executor),
         }
         self.scenario_performance = {name: 0.0 for name in self.scenarios.keys()}
     
-    def generate_orchestrated_campaign(self, generation: int) -> List[Tuple[str, str, Any]]:
-        """Generate complete orchestrated attack campaign"""
-        
+    def generate_orchestrated_campaign(self, generation: int) -> List[Tuple[str, str, Any, Optional[PayloadCharacteristics]]]:
+        """
+        Generate complete orchestrated attack campaign.
+        Returns payload and optional characteristics.
+        """
         campaign = []
         
         logger.info(f"\n🎭 ORCHESTRATING MULTI-SCENARIO CAMPAIGN (Generation {generation})")
         logger.info(f"{'='*90}")
         
-        # Polymorphic attacks
-        logger.info(f"\n📍 Scenario 1: Polymorphic Transformer")
-        poly_attacks = self.scenarios["polymorphic"].generate_wave(generation)
-        campaign.extend([("polymorphic", attack_type, payload) for attack_type, payload in poly_attacks])
-        logger.info(f"   Generated {len(poly_attacks)} polymorphic variants")
-        
-        # Layered siege
-        logger.info(f"\n📍 Scenario 2: Layered Siege (Multi-Phase)")
+        # Standard scenarios (no advanced characteristics)
+        def extend_campaign(name, attacks):
+            for attack_type, payload in attacks:
+                campaign.append((name, attack_type, payload, None))
+
+        extend_campaign("polymorphic", self.scenarios["polymorphic"].generate_wave(generation))
         siege = self.scenarios["layered_siege"].generate_campaign(generation)
         for phase, payloads in siege.phases:
-            campaign.extend([("layered_siege", attack_type, payload) for attack_type, payload in payloads])
-        logger.info(f"   Deployed {len(siege.phases)} attack phases")
-        
-        # Timing oracle
-        logger.info(f"\n📍 Scenario 3: Timing Oracle")
-        timing_attacks = self.scenarios["timing_oracle"].generate_timing_probes(generation)
-        campaign.extend([("timing_oracle", attack_type, payload) for attack_type, payload in timing_attacks])
-        logger.info(f"   Launched {len(timing_attacks)} timing probes")
-        
-        # Context chameleon
-        logger.info(f"\n📍 Scenario 4: Context Chameleon")
-        context_attacks = self.scenarios["context_chameleon"].generate_context_attacks(generation)
-        campaign.extend([("context_chameleon", attack_type, payload) for attack_type, payload in context_attacks])
-        logger.info(f"   Camouflaged {len(context_attacks)} context attacks")
-        
-        # Distributed swarm
-        logger.info(f"\n📍 Scenario 5: Distributed Swarm")
-        swarm_attacks = self.scenarios["distributed_swarm"].generate_swarm_attack(generation)
-        campaign.extend([("distributed_swarm", attack_type, payload) for attack_type, payload in swarm_attacks])
-        logger.info(f"   Coordinated {len(swarm_attacks)} swarm agents")
-        
-        # Evolutionary arms race
-        logger.info(f"\n📍 Scenario 6: Evolutionary Arms Race")
-        evo_attacks = self.scenarios["evolutionary"].evolve_generation()
-        campaign.extend([("evolutionary", attack_type, payload) for attack_type, payload in evo_attacks])
-        logger.info(f"   Evolved {len(evo_attacks)} attack variants")
-        
-        # Metamorphic payloads
-        logger.info(f"\n📍 Scenario 7: Metamorphic Payloads")
-        meta_attacks = self.scenarios["metamorphic"].generate_metamorphs(generation)
-        campaign.extend([("metamorphic", attack_type, payload) for attack_type, payload in meta_attacks])
-        logger.info(f"   Transformed {len(meta_attacks)} metamorphic payloads")
-        
-        # Side-channel analysis
-        logger.info(f"\n📍 Scenario 8: Side-Channel Analysis")
-        side_channel_probes = self.scenarios["side_channel"].generate_probes(generation)
-        campaign.extend([("side_channel", attack_type, payload) for attack_type, payload in side_channel_probes])
-        logger.info(f"   Launched {len(side_channel_probes)} side-channel probes")
+            extend_campaign("layered_siege", payloads)
+        extend_campaign("timing_oracle", self.scenarios["timing_oracle"].generate_timing_probes(generation))
+        extend_campaign("context_chameleon", self.scenarios["context_chameleon"].generate_context_attacks(generation))
+        extend_campaign("distributed_swarm", self.scenarios["distributed_swarm"].generate_swarm_attack(generation))
+        extend_campaign("evolutionary", self.scenarios["evolutionary"].evolve_generation())
+        extend_campaign("metamorphic", self.scenarios["metamorphic"].generate_metamorphs(generation))
+        extend_campaign("side_channel", self.scenarios["side_channel"].generate_probes(generation))
+
+        # Adaptive Arsenal (with characteristics)
+        logger.info(f"\n📍 Scenario: Adaptive Arsenal (Advanced Attacks)")
+        adaptive_attacks = self.scenarios["adaptive_arsenal"].generate_adaptive_wave(generation)
+        for attack_type, payload, chars in adaptive_attacks:
+            campaign.append(("adaptive_arsenal", attack_type, payload, chars))
+        logger.info(f"   Injected {len(adaptive_attacks)} advanced adaptive attacks")
 
         logger.info(f"\n{'='*90}")
         logger.info(f"📊 Total Campaign Size: {len(campaign)} coordinated attacks\n")
         
         return campaign
     
-    def learn_from_results(self, scenario_name: str, payload: Any, blocked: bool):
-        """Feed results back to scenarios for learning"""
+    def learn_from_results(self, scenario_name: str, payload: Any, blocked: bool,
+                           defense_type: str, reason: str,
+                           chars: Optional[PayloadCharacteristics] = None):
+        """Feed results back to scenarios and intelligence for learning"""
         
-        if scenario_name == "polymorphic":
-            if blocked:
-                self.scenarios["polymorphic"].record_block(str(payload))
-        
+        # Feed results to legacy scenarios
+        if scenario_name == "polymorphic" and blocked:
+            self.scenarios["polymorphic"].record_block(str(payload))
         elif scenario_name == "context_chameleon":
             self.scenarios["context_chameleon"].learn_from_result(payload, blocked)
-        
         elif scenario_name == "evolutionary":
             self.scenarios["evolutionary"].update_fitness(str(payload), blocked)
+
+        # Feed results to the main AttackerIntelligence module
+        if scenario_name == "adaptive_arsenal" and chars is not None:
+            self.red_team_executor.attacker_intelligence.record_attack(
+                payload, chars, blocked, defense_type, reason
+            )
         
         # Update scenario performance
-        if blocked:
-            self.scenario_performance[scenario_name] = max(0, self.scenario_performance[scenario_name] - 0.1)
-        else:
-            self.scenario_performance[scenario_name] = min(1, self.scenario_performance[scenario_name] + 0.2)
+        if scenario_name in self.scenario_performance:
+            if blocked:
+                self.scenario_performance[scenario_name] = max(0, self.scenario_performance[scenario_name] - 0.1)
+            else:
+                self.scenario_performance[scenario_name] = min(1, self.scenario_performance[scenario_name] + 0.2)
     
     def get_scenario_analysis(self) -> Dict[str, float]:
         """Get performance analysis of each scenario"""
