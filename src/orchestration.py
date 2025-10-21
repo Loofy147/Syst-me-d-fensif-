@@ -131,6 +131,8 @@ class AutonomousLearningSystem:
             self.learning_history.append({
                 "generation": gen,
                 "fitness": fitness,
+                "attacker_success_rate": self.attacker_intelligence.get_success_rate(),
+                "defense_strengths": self.seed.get_defense_snapshot(),
                 "blocked": blocked_count,
                 "total": len(campaign),
                 "new_signatures": new_signatures,
