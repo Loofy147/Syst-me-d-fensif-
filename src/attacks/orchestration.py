@@ -14,10 +14,13 @@ from typing import List, Dict, Any, Tuple
 from dataclasses import dataclass
 from enum import Enum
 import random
+from src.core.models import DefenseType
+from src.logger import logger
 
 
 class AttackPhase(Enum):
-    """Phases of orchestrated attack"""
+    """Enumeration of the different phases of an orchestrated attack."""
+
     RECONNAISSANCE = "recon"
     INITIAL_PROBE = "probe"
     EXPLOITATION = "exploit"
@@ -27,7 +30,8 @@ class AttackPhase(Enum):
 
 @dataclass
 class AttackScenario:
-    """Complete attack scenario with multiple stages"""
+    """Represents a complete attack scenario with multiple stages."""
+
     name: str
     description: str
     phases: List[Tuple[AttackPhase, List[Any]]]  # Phase + payloads
@@ -497,6 +501,25 @@ class MetamorphicPayloadScenario:
 
 
 # ============================================================================
+# SCENARIO 8: THE SIDE-CHANNEL ANALYZER
+# ============================================================================
+
+class SideChannelAnalysisScenario:
+    """
+    Tries to leak information by observing error messages and response times.
+    """
+    def generate_probes(self, generation: int) -> List[Tuple[str, Any]]:
+        """Generates probes to trigger side-channel leakage."""
+        probes = [
+            ("side_channel_probe", "A" * 10),
+            ("side_channel_probe", "A" * 100),
+            ("side_channel_probe", "A" * 1000),
+            ("side_channel_probe", {"$ne": "A"}),
+            ("side_channel_probe", {"$gt": ""}),
+        ]
+        return probes
+
+# ============================================================================
 # SCENARIO ORCHESTRATOR
 # ============================================================================
 
@@ -512,6 +535,7 @@ class ScenarioOrchestrator:
             "distributed_swarm": DistributedSwarmScenario(),
             "evolutionary": EvolutionaryArmsRaceScenario(),
             "metamorphic": MetamorphicPayloadScenario(),
+            "side_channel": SideChannelAnalysisScenario(),
         }
         self.scenario_performance = {name: 0.0 for name in self.scenarios.keys()}
     
@@ -520,54 +544,60 @@ class ScenarioOrchestrator:
         
         campaign = []
         
-        print(f"\n🎭 ORCHESTRATING MULTI-SCENARIO CAMPAIGN (Generation {generation})")
-        print(f"{'='*90}")
+        logger.info(f"\n🎭 ORCHESTRATING MULTI-SCENARIO CAMPAIGN (Generation {generation})")
+        logger.info(f"{'='*90}")
         
         # Polymorphic attacks
-        print(f"\n📍 Scenario 1: Polymorphic Transformer")
+        logger.info(f"\n📍 Scenario 1: Polymorphic Transformer")
         poly_attacks = self.scenarios["polymorphic"].generate_wave(generation)
         campaign.extend([("polymorphic", attack_type, payload) for attack_type, payload in poly_attacks])
-        print(f"   Generated {len(poly_attacks)} polymorphic variants")
+        logger.info(f"   Generated {len(poly_attacks)} polymorphic variants")
         
         # Layered siege
-        print(f"\n📍 Scenario 2: Layered Siege (Multi-Phase)")
+        logger.info(f"\n📍 Scenario 2: Layered Siege (Multi-Phase)")
         siege = self.scenarios["layered_siege"].generate_campaign(generation)
         for phase, payloads in siege.phases:
             campaign.extend([("layered_siege", attack_type, payload) for attack_type, payload in payloads])
-        print(f"   Deployed {len(siege.phases)} attack phases")
+        logger.info(f"   Deployed {len(siege.phases)} attack phases")
         
         # Timing oracle
-        print(f"\n📍 Scenario 3: Timing Oracle")
+        logger.info(f"\n📍 Scenario 3: Timing Oracle")
         timing_attacks = self.scenarios["timing_oracle"].generate_timing_probes(generation)
         campaign.extend([("timing_oracle", attack_type, payload) for attack_type, payload in timing_attacks])
-        print(f"   Launched {len(timing_attacks)} timing probes")
+        logger.info(f"   Launched {len(timing_attacks)} timing probes")
         
         # Context chameleon
-        print(f"\n📍 Scenario 4: Context Chameleon")
+        logger.info(f"\n📍 Scenario 4: Context Chameleon")
         context_attacks = self.scenarios["context_chameleon"].generate_context_attacks(generation)
         campaign.extend([("context_chameleon", attack_type, payload) for attack_type, payload in context_attacks])
-        print(f"   Camouflaged {len(context_attacks)} context attacks")
+        logger.info(f"   Camouflaged {len(context_attacks)} context attacks")
         
         # Distributed swarm
-        print(f"\n📍 Scenario 5: Distributed Swarm")
+        logger.info(f"\n📍 Scenario 5: Distributed Swarm")
         swarm_attacks = self.scenarios["distributed_swarm"].generate_swarm_attack(generation)
         campaign.extend([("distributed_swarm", attack_type, payload) for attack_type, payload in swarm_attacks])
-        print(f"   Coordinated {len(swarm_attacks)} swarm agents")
+        logger.info(f"   Coordinated {len(swarm_attacks)} swarm agents")
         
         # Evolutionary arms race
-        print(f"\n📍 Scenario 6: Evolutionary Arms Race")
+        logger.info(f"\n📍 Scenario 6: Evolutionary Arms Race")
         evo_attacks = self.scenarios["evolutionary"].evolve_generation()
         campaign.extend([("evolutionary", attack_type, payload) for attack_type, payload in evo_attacks])
-        print(f"   Evolved {len(evo_attacks)} attack variants")
+        logger.info(f"   Evolved {len(evo_attacks)} attack variants")
         
         # Metamorphic payloads
-        print(f"\n📍 Scenario 7: Metamorphic Payloads")
+        logger.info(f"\n📍 Scenario 7: Metamorphic Payloads")
         meta_attacks = self.scenarios["metamorphic"].generate_metamorphs(generation)
         campaign.extend([("metamorphic", attack_type, payload) for attack_type, payload in meta_attacks])
-        print(f"   Transformed {len(meta_attacks)} metamorphic payloads")
+        logger.info(f"   Transformed {len(meta_attacks)} metamorphic payloads")
         
-        print(f"\n{'='*90}")
-        print(f"📊 Total Campaign Size: {len(campaign)} coordinated attacks\n")
+        # Side-channel analysis
+        logger.info(f"\n📍 Scenario 8: Side-Channel Analysis")
+        side_channel_probes = self.scenarios["side_channel"].generate_probes(generation)
+        campaign.extend([("side_channel", attack_type, payload) for attack_type, payload in side_channel_probes])
+        logger.info(f"   Launched {len(side_channel_probes)} side-channel probes")
+
+        logger.info(f"\n{'='*90}")
+        logger.info(f"📊 Total Campaign Size: {len(campaign)} coordinated attacks\n")
         
         return campaign
     

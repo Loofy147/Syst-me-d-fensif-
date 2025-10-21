@@ -1,0 +1,320 @@
+2025-10-21 11:30:23,426 - root - INFO -
+==========================================================================================
+2025-10-21 11:30:23,426 - root - INFO - 🛡️  UPGRADING TO ULTIMATE DEFENSE FRAMEWORK
+2025-10-21 11:30:23,426 - root - INFO - ==========================================================================================
+
+2025-10-21 11:30:23,426 - root - INFO -   ✓ Upgraded SANITIZATION → Multi-layer decoding defense
+2025-10-21 11:30:23,426 - root - INFO -   ✓ Upgraded TYPE_CHECKING → Deep introspection defense
+2025-10-21 11:30:23,427 - root - INFO -   ✓ Upgraded BOUNDS_ENFORCEMENT → Introspection-based validation
+2025-10-21 11:30:23,427 - root - INFO -   ✓ Upgraded STATE_PROTECTION → Deep graph inspection
+2025-10-21 11:30:23,427 - root - INFO -
+  🔧 Strengthening upgraded defenses...
+2025-10-21 11:30:23,427 - root - INFO -   ✓ All defenses strengthened by +3
+
+2025-10-21 11:31:13,714 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,714 - root - INFO - 🛡️  UPGRADING TO ULTIMATE DEFENSE FRAMEWORK
+2025-10-21 11:31:13,714 - root - INFO - ==========================================================================================
+
+2025-10-21 11:31:13,714 - root - INFO -   ✓ Upgraded SANITIZATION → Multi-layer decoding defense
+2025-10-21 11:31:13,714 - root - INFO -   ✓ Upgraded TYPE_CHECKING → Deep introspection defense
+2025-10-21 11:31:13,714 - root - INFO -   ✓ Upgraded BOUNDS_ENFORCEMENT → Introspection-based validation
+2025-10-21 11:31:13,714 - root - INFO -   ✓ Upgraded STATE_PROTECTION → Deep graph inspection
+2025-10-21 11:31:13,714 - root - INFO -
+  🔧 Strengthening upgraded defenses...
+2025-10-21 11:31:13,714 - root - INFO -   ✓ All defenses strengthened by +3
+
+2025-10-21 11:31:13,714 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,714 - root - INFO - 🧠 AUTONOMOUS LEARNING SYSTEM - SELF-ADAPTIVE EVOLUTION
+2025-10-21 11:31:13,714 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,714 - root - INFO - System: TestSystem
+2025-10-21 11:31:13,714 - root - INFO - Max Generations: 3
+2025-10-21 11:31:13,714 - root - INFO -
+The system will learn attack patterns, reason about defenses,
+2025-10-21 11:31:13,714 - root - INFO - and synthesize new protections WITHOUT pre-programmed responses.
+
+2025-10-21 11:31:13,715 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,715 - root - INFO - 🔄 GENERATION 0 - AUTONOMOUS LEARNING CYCLE
+2025-10-21 11:31:13,715 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,715 - root - INFO -
+🎭 ORCHESTRATING MULTI-SCENARIO CAMPAIGN (Generation 0)
+2025-10-21 11:31:13,715 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,715 - root - INFO -
+📍 Scenario 1: Polymorphic Transformer
+2025-10-21 11:31:13,715 - root - INFO -    Generated 4 polymorphic variants
+2025-10-21 11:31:13,715 - root - INFO -
+📍 Scenario 2: Layered Siege (Multi-Phase)
+2025-10-21 11:31:13,715 - root - INFO -    Deployed 4 attack phases
+2025-10-21 11:31:13,715 - root - INFO -
+📍 Scenario 3: Timing Oracle
+2025-10-21 11:31:13,715 - root - INFO -    Launched 7 timing probes
+2025-10-21 11:31:13,715 - root - INFO -
+📍 Scenario 4: Context Chameleon
+2025-10-21 11:31:13,715 - root - INFO -    Camouflaged 6 context attacks
+2025-10-21 11:31:13,715 - root - INFO -
+📍 Scenario 5: Distributed Swarm
+2025-10-21 11:31:13,715 - root - INFO -    Coordinated 6 swarm agents
+2025-10-21 11:31:13,715 - root - INFO -
+📍 Scenario 6: Evolutionary Arms Race
+2025-10-21 11:31:13,715 - root - INFO -    Evolved 6 attack variants
+2025-10-21 11:31:13,716 - root - INFO -
+📍 Scenario 7: Metamorphic Payloads
+2025-10-21 11:31:13,716 - root - INFO -    Transformed 7 metamorphic payloads
+2025-10-21 11:31:13,716 - root - INFO -
+📍 Scenario 8: Side-Channel Analysis
+2025-10-21 11:31:13,716 - root - INFO -    Launched 5 side-channel probes
+2025-10-21 11:31:13,716 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,716 - root - INFO - 📊 Total Campaign Size: 53 coordinated attacks
+
+2025-10-21 11:31:13,716 - root - INFO -
+🎯 PROCESSING ATTACKS & LEARNING...
+2025-10-21 11:31:13,716 - root - INFO - ------------------------------------------------------------------------------------------
+2025-10-21 11:31:13,720 - root - INFO -
+📊 GENERATION 0 RESULTS:
+2025-10-21 11:31:13,720 - root - INFO -   Attacks Processed: 53
+2025-10-21 11:31:13,720 - root - INFO -   Attacks Blocked: 28/53
+2025-10-21 11:31:13,720 - root - INFO -   Defense Fitness: 52.8%
+2025-10-21 11:31:13,720 - root - INFO -   New Patterns Learned: 53
+2025-10-21 11:31:13,720 - root - INFO -   Strategies Synthesized: 32
+2025-10-21 11:31:13,720 - root - INFO -
+🧠 AUTONOMOUS INTELLIGENCE STATE (Gen 1)
+2025-10-21 11:31:13,720 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,721 - root - INFO -
+📚 Knowledge Base:
+2025-10-21 11:31:13,721 - root - INFO -   Attack Signatures Learned: 26
+2025-10-21 11:31:13,721 - root - INFO -   Defensive Principles: 6
+2025-10-21 11:31:13,721 - root - INFO -   Attacks Analyzed: 53
+2025-10-21 11:31:13,721 - root - INFO -
+  Attack Family Distribution:
+2025-10-21 11:31:13,721 - root - INFO -     type_manipulation          16 signatures
+2025-10-21 11:31:13,721 - root - INFO -     injection                   8 signatures
+2025-10-21 11:31:13,721 - root - INFO -     encoding_obfuscation        2 signatures
+2025-10-21 11:31:13,721 - root - INFO -
+🎯 Learned Principles (Top 5):
+2025-10-21 11:31:13,721 - root - INFO -   introspection_validation       █████████░  95.6% (23 applied)
+2025-10-21 11:31:13,721 - root - INFO -   recursive_type_validation      ███████░░░  70.5% (5 applied)
+2025-10-21 11:31:13,721 - root - INFO -   multi_layer_sanitization       █████░░░░░  55.0% (1 applied)
+2025-10-21 11:31:13,721 - root - INFO -   pattern_blacklist_expansion    █████░░░░░  55.0% (1 applied)
+2025-10-21 11:31:13,721 - root - INFO -   decode_before_check            █████░░░░░  55.0% (1 applied)
+2025-10-21 11:31:13,721 - root - INFO - ==========================================================================================
+
+2025-10-21 11:31:13,721 - root - INFO -
+🛡️  CURRENT DEFENSE STATE:
+2025-10-21 11:31:13,722 - root - INFO -   ✓ SANITIZATION              ██████████ (10/10) Eff:   0.0%
+2025-10-21 11:31:13,722 - root - INFO -   ✓ INPUT_VALIDATION          █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,722 - root - INFO -   ✓ TYPE_CHECKING             ██████████ (10/10) Eff:   0.0%
+2025-10-21 11:31:13,722 - root - INFO -   ✓ BOUNDS_ENFORCEMENT        ████████░░ ( 8/10) Eff:   0.0%
+2025-10-21 11:31:13,722 - root - INFO -   ✓ STATE_PROTECTION          ████████░░ ( 8/10) Eff:   0.0%
+2025-10-21 11:31:13,722 - root - INFO -   ✓ RATE_LIMITING             █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,722 - root - INFO -   ✓ CRYPTOGRAPHY              █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,722 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,722 - root - INFO - 🔄 GENERATION 1 - AUTONOMOUS LEARNING CYCLE
+2025-10-21 11:31:13,722 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,722 - root - INFO -
+🎭 ORCHESTRATING MULTI-SCENARIO CAMPAIGN (Generation 1)
+2025-10-21 11:31:13,722 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,722 - root - INFO -
+📍 Scenario 1: Polymorphic Transformer
+2025-10-21 11:31:13,722 - root - INFO -    Generated 4 polymorphic variants
+2025-10-21 11:31:13,722 - root - INFO -
+📍 Scenario 2: Layered Siege (Multi-Phase)
+2025-10-21 11:31:13,722 - root - INFO -    Deployed 4 attack phases
+2025-10-21 11:31:13,722 - root - INFO -
+📍 Scenario 3: Timing Oracle
+2025-10-21 11:31:13,723 - root - INFO -    Launched 7 timing probes
+2025-10-21 11:31:13,723 - root - INFO -
+📍 Scenario 4: Context Chameleon
+2025-10-21 11:31:13,723 - root - INFO -    Camouflaged 9 context attacks
+2025-10-21 11:31:13,723 - root - INFO -
+📍 Scenario 5: Distributed Swarm
+2025-10-21 11:31:13,723 - root - INFO -    Coordinated 6 swarm agents
+2025-10-21 11:31:13,723 - root - INFO -
+📍 Scenario 6: Evolutionary Arms Race
+2025-10-21 11:31:13,723 - root - INFO -    Evolved 6 attack variants
+2025-10-21 11:31:13,723 - root - INFO -
+📍 Scenario 7: Metamorphic Payloads
+2025-10-21 11:31:13,723 - root - INFO -    Transformed 7 metamorphic payloads
+2025-10-21 11:31:13,723 - root - INFO -
+📍 Scenario 8: Side-Channel Analysis
+2025-10-21 11:31:13,723 - root - INFO -    Launched 5 side-channel probes
+2025-10-21 11:31:13,723 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,723 - root - INFO - 📊 Total Campaign Size: 56 coordinated attacks
+
+2025-10-21 11:31:13,723 - root - INFO -
+🎯 PROCESSING ATTACKS & LEARNING...
+2025-10-21 11:31:13,724 - root - INFO - ------------------------------------------------------------------------------------------
+2025-10-21 11:31:13,727 - root - INFO -
+📊 GENERATION 1 RESULTS:
+2025-10-21 11:31:13,727 - root - INFO -   Attacks Processed: 56
+2025-10-21 11:31:13,727 - root - INFO -   Attacks Blocked: 31/56
+2025-10-21 11:31:13,727 - root - INFO -   Defense Fitness: 55.4%
+2025-10-21 11:31:13,727 - root - INFO -   New Patterns Learned: 0
+2025-10-21 11:31:13,727 - root - INFO -   Strategies Synthesized: 32
+2025-10-21 11:31:13,727 - root - INFO -
+🧠 AUTONOMOUS INTELLIGENCE STATE (Gen 2)
+2025-10-21 11:31:13,727 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,727 - root - INFO -
+📚 Knowledge Base:
+2025-10-21 11:31:13,727 - root - INFO -   Attack Signatures Learned: 26
+2025-10-21 11:31:13,727 - root - INFO -   Defensive Principles: 6
+2025-10-21 11:31:13,727 - root - INFO -   Attacks Analyzed: 109
+2025-10-21 11:31:13,727 - root - INFO -
+  Attack Family Distribution:
+2025-10-21 11:31:13,727 - root - INFO -     type_manipulation          16 signatures
+2025-10-21 11:31:13,727 - root - INFO -     injection                   8 signatures
+2025-10-21 11:31:13,727 - root - INFO -     encoding_obfuscation        2 signatures
+2025-10-21 11:31:13,727 - root - INFO -
+🎯 Learned Principles (Top 5):
+2025-10-21 11:31:13,728 - root - INFO -   introspection_validation       █████████░  99.6% (46 applied)
+2025-10-21 11:31:13,728 - root - INFO -   recursive_type_validation      ████████░░  82.6% (10 applied)
+2025-10-21 11:31:13,728 - root - INFO -   multi_layer_sanitization       █████░░░░░  59.5% (2 applied)
+2025-10-21 11:31:13,728 - root - INFO -   pattern_blacklist_expansion    █████░░░░░  59.5% (2 applied)
+2025-10-21 11:31:13,728 - root - INFO -   decode_before_check            █████░░░░░  59.5% (2 applied)
+2025-10-21 11:31:13,728 - root - INFO - ==========================================================================================
+
+2025-10-21 11:31:13,728 - root - INFO -
+🛡️  CURRENT DEFENSE STATE:
+2025-10-21 11:31:13,728 - root - INFO -   ✓ SANITIZATION              ██████████ (10/10) Eff:   0.0%
+2025-10-21 11:31:13,728 - root - INFO -   ✓ INPUT_VALIDATION          █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,728 - root - INFO -   ✓ TYPE_CHECKING             ██████████ (10/10) Eff:   0.0%
+2025-10-21 11:31:13,728 - root - INFO -   ✓ BOUNDS_ENFORCEMENT        ████████░░ ( 8/10) Eff:   0.0%
+2025-10-21 11:31:13,728 - root - INFO -   ✓ STATE_PROTECTION          ████████░░ ( 8/10) Eff:   0.0%
+2025-10-21 11:31:13,728 - root - INFO -   ✓ RATE_LIMITING             █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,728 - root - INFO -   ✓ CRYPTOGRAPHY              █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,728 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,728 - root - INFO - 🔄 GENERATION 2 - AUTONOMOUS LEARNING CYCLE
+2025-10-21 11:31:13,728 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,729 - root - INFO -
+🎭 ORCHESTRATING MULTI-SCENARIO CAMPAIGN (Generation 2)
+2025-10-21 11:31:13,729 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 1: Polymorphic Transformer
+2025-10-21 11:31:13,729 - root - INFO -    Generated 4 polymorphic variants
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 2: Layered Siege (Multi-Phase)
+2025-10-21 11:31:13,729 - root - INFO -    Deployed 4 attack phases
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 3: Timing Oracle
+2025-10-21 11:31:13,729 - root - INFO -    Launched 7 timing probes
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 4: Context Chameleon
+2025-10-21 11:31:13,729 - root - INFO -    Camouflaged 9 context attacks
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 5: Distributed Swarm
+2025-10-21 11:31:13,729 - root - INFO -    Coordinated 6 swarm agents
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 6: Evolutionary Arms Race
+2025-10-21 11:31:13,729 - root - INFO -    Evolved 6 attack variants
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 7: Metamorphic Payloads
+2025-10-21 11:31:13,729 - root - INFO -    Transformed 7 metamorphic payloads
+2025-10-21 11:31:13,729 - root - INFO -
+📍 Scenario 8: Side-Channel Analysis
+2025-10-21 11:31:13,730 - root - INFO -    Launched 5 side-channel probes
+2025-10-21 11:31:13,730 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,730 - root - INFO - 📊 Total Campaign Size: 56 coordinated attacks
+
+2025-10-21 11:31:13,730 - root - INFO -
+🎯 PROCESSING ATTACKS & LEARNING...
+2025-10-21 11:31:13,730 - root - INFO - ------------------------------------------------------------------------------------------
+2025-10-21 11:31:13,733 - root - INFO -
+📊 GENERATION 2 RESULTS:
+2025-10-21 11:31:13,733 - root - INFO -   Attacks Processed: 56
+2025-10-21 11:31:13,733 - root - INFO -   Attacks Blocked: 31/56
+2025-10-21 11:31:13,733 - root - INFO -   Defense Fitness: 55.4%
+2025-10-21 11:31:13,733 - root - INFO -   New Patterns Learned: 0
+2025-10-21 11:31:13,733 - root - INFO -   Strategies Synthesized: 32
+2025-10-21 11:31:13,733 - root - INFO -
+🧠 AUTONOMOUS INTELLIGENCE STATE (Gen 3)
+2025-10-21 11:31:13,733 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,733 - root - INFO -
+📚 Knowledge Base:
+2025-10-21 11:31:13,733 - root - INFO -   Attack Signatures Learned: 26
+2025-10-21 11:31:13,733 - root - INFO -   Defensive Principles: 6
+2025-10-21 11:31:13,733 - root - INFO -   Attacks Analyzed: 165
+2025-10-21 11:31:13,733 - root - INFO -
+  Attack Family Distribution:
+2025-10-21 11:31:13,733 - root - INFO -     type_manipulation          16 signatures
+2025-10-21 11:31:13,734 - root - INFO -     injection                   8 signatures
+2025-10-21 11:31:13,734 - root - INFO -     encoding_obfuscation        2 signatures
+2025-10-21 11:31:13,734 - root - INFO -
+🎯 Learned Principles (Top 5):
+2025-10-21 11:31:13,734 - root - INFO -   introspection_validation       █████████░ 100.0% (69 applied)
+2025-10-21 11:31:13,734 - root - INFO -   recursive_type_validation      ████████░░  89.7% (15 applied)
+2025-10-21 11:31:13,734 - root - INFO -   multi_layer_sanitization       ██████░░░░  63.6% (3 applied)
+2025-10-21 11:31:13,734 - root - INFO -   pattern_blacklist_expansion    ██████░░░░  63.6% (3 applied)
+2025-10-21 11:31:13,734 - root - INFO -   decode_before_check            ██████░░░░  63.6% (3 applied)
+2025-10-21 11:31:13,734 - root - INFO - ==========================================================================================
+
+2025-10-21 11:31:13,734 - root - INFO -
+🛡️  CURRENT DEFENSE STATE:
+2025-10-21 11:31:13,734 - root - INFO -   ✓ SANITIZATION              ██████████ (10/10) Eff:   0.0%
+2025-10-21 11:31:13,734 - root - INFO -   ✓ INPUT_VALIDATION          █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,734 - root - INFO -   ✓ TYPE_CHECKING             ██████████ (10/10) Eff:   0.0%
+2025-10-21 11:31:13,734 - root - INFO -   ✓ BOUNDS_ENFORCEMENT        ████████░░ ( 8/10) Eff:   0.0%
+2025-10-21 11:31:13,734 - root - INFO -   ✓ STATE_PROTECTION          ████████░░ ( 8/10) Eff:   0.0%
+2025-10-21 11:31:13,734 - root - INFO -   ✓ RATE_LIMITING             █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,734 - root - INFO -   ✓ CRYPTOGRAPHY              █████░░░░░ ( 5/10) Eff:   0.0%
+2025-10-21 11:31:13,735 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,735 - root - INFO - 🎓 AUTONOMOUS LEARNING COMPLETE - FINAL ANALYSIS
+2025-10-21 11:31:13,735 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,735 - root - INFO -
+📈 LEARNING PROGRESSION:
+2025-10-21 11:31:13,735 - root - INFO -   Generation 0 Fitness: 52.8%
+2025-10-21 11:31:13,735 - root - INFO -   Final Fitness: 55.4%
+2025-10-21 11:31:13,735 - root - INFO -   Improvement: +2.5%
+2025-10-21 11:31:13,735 - root - INFO -
+🧠 KNOWLEDGE ACQUIRED:
+2025-10-21 11:31:13,735 - root - INFO -   Attack Signatures Learned: 26
+2025-10-21 11:31:13,735 - root - INFO -   Defensive Principles: 6
+2025-10-21 11:31:13,735 - root - INFO -   Total Attacks Analyzed: 165
+2025-10-21 11:31:13,735 - root - INFO -
+📊 GENERATION-BY-GENERATION:
+2025-10-21 11:31:13,735 - root - INFO -   Gen | Fitness | Blocked | New Sigs | Strategies
+2025-10-21 11:31:13,735 - root - INFO -   ----+---------+---------+----------+-----------
+2025-10-21 11:31:13,735 - root - INFO -     0 |   52.8% | 28/53 |       53 |         32
+2025-10-21 11:31:13,735 - root - INFO -     1 |   55.4% | 31/56 |        0 |         32
+2025-10-21 11:31:13,735 - root - INFO -     2 |   55.4% | 31/56 |        0 |         32
+2025-10-21 11:31:13,735 - root - INFO -
+🎯 META-LEARNING INSIGHTS:
+2025-10-21 11:31:13,735 - root - INFO -   Learning Velocity: 8.67 signatures/generation
+2025-10-21 11:31:13,735 - root - INFO -   Highly Effective Principles: 2
+2025-10-21 11:31:13,736 - root - INFO -
+🎭 ATTACK SCENARIO EFFECTIVENESS (from attacker perspective):
+2025-10-21 11:31:13,736 - root - INFO -   side_channel         ██████████ 100.0%
+2025-10-21 11:31:13,736 - root - INFO -   timing_oracle        █████████░  90.0%
+2025-10-21 11:31:13,736 - root - INFO -   distributed_swarm    █████████░  90.0%
+2025-10-21 11:31:13,736 - root - INFO -   context_chameleon    ████░░░░░░  40.0%
+2025-10-21 11:31:13,736 - root - INFO -   metamorphic          █░░░░░░░░░  10.0%
+2025-10-21 11:31:13,736 - root - INFO -   layered_siege        ░░░░░░░░░░   0.0%
+2025-10-21 11:31:13,736 - root - INFO -   polymorphic          ░░░░░░░░░░   0.0%
+2025-10-21 11:31:13,736 - root - INFO -   evolutionary         ░░░░░░░░░░   0.0%
+2025-10-21 11:31:13,736 - root - INFO -
+🔬 INTELLIGENCE SYSTEM STATE:
+2025-10-21 11:31:13,736 - root - INFO -   Knowledge Entries: 0
+2025-10-21 11:31:13,736 - root - INFO -   Reasoning Steps: 75
+2025-10-21 11:31:13,736 - root - INFO -
+  Top 3 Most Effective Principles:
+2025-10-21 11:31:13,736 - root - INFO -     1. introspection_validation       100.0%
+2025-10-21 11:31:13,736 - root - INFO -     2. recursive_type_validation       89.7%
+2025-10-21 11:31:13,736 - root - INFO -     3. multi_layer_sanitization        63.6%
+2025-10-21 11:31:13,737 - root - INFO -
+==========================================================================================
+2025-10-21 11:31:13,737 - root - INFO - CONCLUSION
+2025-10-21 11:31:13,737 - root - INFO - ==========================================================================================
+2025-10-21 11:31:13,737 - root - INFO -
+✅ The system demonstrated AUTONOMOUS LEARNING:
+2025-10-21 11:31:13,737 - root - INFO -    • Built knowledge base from experience (26 attack patterns)
+2025-10-21 11:31:13,737 - root - INFO -    • Reasoned about attack families and relationships
+2025-10-21 11:31:13,737 - root - INFO -    • Synthesized 6 defensive principles WITHOUT pre-programming
+2025-10-21 11:31:13,737 - root - INFO -    • Adapted to 8 different attack scenarios
+2025-10-21 11:31:13,737 - root - INFO -    • Improved fitness from 52.8% → 55.4%
+2025-10-21 11:31:13,737 - root - INFO -
+🎯 The intelligence LEARNED, not just executed pre-programmed rules.

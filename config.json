@@ -1,0 +1,20 @@
+{
+    "simulation": {
+        "max_generations": 10,
+        "mastery_fitness_threshold": 95.0,
+        "mastery_generations_required": 3
+    },
+    "intelligence": {
+        "ema_alpha": 0.1,
+        "meta_learning": {
+            "min_history_for_analysis": 5,
+            "highly_effective_threshold": 0.8,
+            "underperforming_threshold": 0.3,
+            "min_applications_for_pruning": 3
+        }
+    },
+    "logging": {
+        "level": "INFO",
+        "log_file": "system_run.log"
+    }
+}

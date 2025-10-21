@@ -15,12 +15,16 @@ Core Intelligence Components:
 5. META-LEARNING: Learns how to learn faster over time
 """
 
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import List, Dict, Set, Any, Optional, Tuple
 from enum import Enum
 from collections import defaultdict
 import hashlib
 import json
+from src.core.models import EvolvableSeed, DefenseType
+from src.config import config
+from src.logger import logger
 
 
 # ============================================================================
@@ -28,7 +32,8 @@ import json
 # ============================================================================
 
 class AttackFamily(Enum):
-    """Learned attack categories"""
+    """Enumeration of the different families of attacks."""
+
     INJECTION = "injection"
     OVERFLOW = "overflow"
     TYPE_MANIPULATION = "type_manipulation"
@@ -41,7 +46,8 @@ class AttackFamily(Enum):
 
 @dataclass
 class AttackSignature:
-    """Learned signature of an attack pattern"""
+    """Represents the signature of a learned attack pattern."""
+
     signature_id: str
     family: AttackFamily
     characteristics: Dict[str, Any] = field(default_factory=dict)
@@ -53,13 +59,15 @@ class AttackSignature:
     
     @property
     def success_rate(self) -> float:
+        """Returns the success rate of the attack."""
         total = self.success_count + self.block_count
         return self.success_count / total if total > 0 else 0.0
 
 
 @dataclass
 class DefensivePrinciple:
-    """A learned defensive principle"""
+    """Represents a learned defensive principle."""
+
     principle_id: str
     description: str
     applicable_families: Set[AttackFamily]
@@ -68,17 +76,26 @@ class DefensivePrinciple:
     times_successful: int = 0
     prerequisites: List[str] = field(default_factory=list)
     
+    def __post_init__(self):
+        self.ema_alpha = config.get("intelligence", "ema_alpha")
+
     def update_effectiveness(self, successful: bool):
-        """Update effectiveness based on outcome"""
+        """Updates the effectiveness of the principle using an Exponential Moving Average."""
         self.times_applied += 1
         if successful:
             self.times_successful += 1
-        self.effectiveness = self.times_successful / self.times_applied if self.times_applied > 0 else 0.5
+
+        # Use EMA to weigh recent results more heavily
+        current_outcome = 1.0 if successful else 0.0
+        if self.times_applied == 1:
+            self.effectiveness = 0.5  # Start at a neutral value
+        self.effectiveness = (self.ema_alpha * current_outcome) + (1 - self.ema_alpha) * self.effectiveness
 
 
 @dataclass
 class KnowledgeEntry:
-    """Entry in the knowledge base"""
+    """Represents an entry in the knowledge base."""
+
     entry_id: str
     category: str
     content: Dict[str, Any]
@@ -88,8 +105,8 @@ class KnowledgeEntry:
 
 
 class AttackKnowledgeBase:
-    """Self-building knowledge base of attack patterns"""
-    
+    """A self-building knowledge base of attack patterns."""
+
     def __init__(self):
         self.signatures: Dict[str, AttackSignature] = {}
         self.principles: Dict[str, DefensivePrinciple] = {}
@@ -166,7 +183,7 @@ class AttackKnowledgeBase:
             return "url"
         if "\\x" in payload_str:
             return "hex"
-        if "\u" in payload_str:
+        if "\\u" in payload_str:
             return "unicode"
         
         return "none"
@@ -180,30 +197,47 @@ class AttackKnowledgeBase:
         return False
     
     def _classify_attack_family(self, characteristics: Dict) -> AttackFamily:
-        """Classify attack into family based on characteristics"""
-        
-        # Injection family
-        if (characteristics.get("has_sql_keywords") or 
-            characteristics.get("has_quotes") and characteristics.get("has_semicolon")):
-            return AttackFamily.INJECTION
-        
-        # Encoding obfuscation
-        if characteristics.get("is_encoded") != "none":
-            return AttackFamily.ENCODING_OBFUSCATION
-        
-        # Overflow
-        if characteristics.get("size_bytes", 0) > 1000:
-            return AttackFamily.OVERFLOW
-        
-        # Type manipulation
-        if (characteristics.get("is_complex_type") or 
-            characteristics.get("has_magic_methods")):
-            return AttackFamily.TYPE_MANIPULATION
-        
-        # State corruption
-        if characteristics.get("has_nested_structure"):
-            return AttackFamily.STATE_CORRUPTION
-        
+        """Classify attack into family based on a scoring system."""
+        scores = {family: 0 for family in AttackFamily}
+
+        # Define scoring rules
+        rules = {
+            AttackFamily.INJECTION: [
+                ("has_sql_keywords", 3),
+                ("has_quotes", 1),
+                ("has_semicolon", 1),
+            ],
+            AttackFamily.ENCODING_OBFUSCATION: [
+                ("is_encoded", lambda v: 3 if v != "none" else 0),
+            ],
+            AttackFamily.OVERFLOW: [
+                ("size_bytes", lambda v: 3 if v > 1000 else 0),
+            ],
+            AttackFamily.TYPE_MANIPULATION: [
+                ("is_complex_type", 2),
+                ("has_magic_methods", 2),
+            ],
+            AttackFamily.STATE_CORRUPTION: [
+                ("has_nested_structure", 3),
+            ],
+        }
+
+        # Calculate scores
+        for family, family_rules in rules.items():
+            for characteristic, score in family_rules:
+                value = characteristics.get(characteristic)
+                if value:
+                    if callable(score):
+                        scores[family] += score(value)
+                    else:
+                        scores[family] += score
+
+        # Determine the family with the highest score
+        if any(s > 0 for s in scores.values()):
+            highest_score_family = max(scores, key=scores.get)
+            if scores[highest_score_family] > 0:
+                return highest_score_family
+
         return AttackFamily.UNKNOWN
     
     def _generate_signature_hash(self, characteristics: Dict) -> str:
@@ -248,8 +282,8 @@ class AttackKnowledgeBase:
 # ============================================================================
 
 class ReasoningEngine:
-    """Analyzes attacks and synthesizes defensive strategies"""
-    
+    """Analyzes attacks and synthesizes defensive strategies."""
+
     def __init__(self, knowledge_base: AttackKnowledgeBase):
         self.kb = knowledge_base
         self.reasoning_history: List[Dict] = []
@@ -356,24 +390,34 @@ class ReasoningEngine:
     def meta_learn(self) -> Dict[str, Any]:
         """Analyze learning effectiveness and adapt learning strategy"""
         
-        if len(self.reasoning_history) < 5:
+        min_history = config.get("intelligence", "meta_learning")["min_history_for_analysis"]
+        if len(self.reasoning_history) < min_history:
             return {"status": "insufficient_data"}
         
         # Analyze which principles work best
         principle_effectiveness = defaultdict(list)
+        min_applications = config.get("intelligence", "meta_learning")["min_applications_for_pruning"]
         for principle in self.kb.principles.values():
-            if principle.times_applied > 0:
+            if principle.times_applied > min_applications:
                 principle_effectiveness[principle.principle_id].append(principle.effectiveness)
         
-        # Find patterns in successful principles
+        # Find patterns in successful and unsuccessful principles
+        highly_effective_threshold = config.get("intelligence", "meta_learning")["highly_effective_threshold"]
+        underperforming_threshold = config.get("intelligence", "meta_learning")["underperforming_threshold"]
+
         highly_effective = [
             pid for pid, effs in principle_effectiveness.items()
-            if sum(effs) / len(effs) > 0.7
+            if sum(effs) / len(effs) > highly_effective_threshold
+        ]
+        underperforming = [
+            pid for pid, effs in principle_effectiveness.items()
+            if sum(effs) / len(effs) < underperforming_threshold
         ]
         
         return {
             "status": "learned",
             "highly_effective_principles": highly_effective,
+            "underperforming_principles": underperforming,
             "total_principles_learned": len(self.kb.principles),
             "learning_velocity": len(self.kb.signatures) / max(self.kb.generation, 1)
         }
@@ -384,77 +428,35 @@ class ReasoningEngine:
 # ============================================================================
 
 class AdaptiveDefenseSynthesizer:
-    """Synthesizes new defense mechanisms from learned principles"""
-    
+    """Synthesizes new defense mechanisms from learned principles."""
+
     def __init__(self, knowledge_base: AttackKnowledgeBase, reasoning_engine: ReasoningEngine):
         self.kb = knowledge_base
         self.reasoning = reasoning_engine
         self.synthesized_defenses: Dict[str, Any] = {}
     
-    def synthesize_from_principle(self, principle: DefensivePrinciple, seed) -> str:
+    def synthesize_from_principle(self, principle: DefensivePrinciple, seed: EvolvableSeed) -> str:
         """Create concrete defense from abstract principle"""
         
-        if principle.principle_id == "multi_layer_decoding":
-            # Synthesize: Decode payloads before checking
-            return self._synth_multi_layer_decoder(seed)
-        
-        elif principle.principle_id == "introspection_validation":
-            # Synthesize: Deep object introspection
-            return self._synth_introspection_validator(seed)
-        
-        elif principle.principle_id == "recursive_type_validation":
-            # Synthesize: Recursive type checking
-            return self._synth_recursive_type_check(seed)
-        
-        elif principle.principle_id == "memory_based_validation":
-            # Synthesize: Memory-based bounds checking
-            return self._synth_memory_validator(seed)
-        
-        elif principle.principle_id == "deep_state_inspection":
-            # Synthesize: Deep state graph inspection
-            return self._synth_state_inspector(seed)
-        
-        elif principle.principle_id == "pattern_blacklist_expansion":
-            # Synthesize: Expand pattern blacklist
-            return self._synth_pattern_expansion(seed)
-        
+        defense_map = {
+            "multi_layer_decoding": (DefenseType.SANITIZATION, 4),
+            "introspection_validation": (DefenseType.TYPE_CHECKING, 4),
+            "recursive_type_validation": (DefenseType.TYPE_CHECKING, 3),
+            "memory_based_validation": (DefenseType.BOUNDS_ENFORCEMENT, 4),
+            "deep_state_inspection": (DefenseType.STATE_PROTECTION, 4),
+            "pattern_blacklist_expansion": (DefenseType.SANITIZATION, 2),
+        }
+
+        if principle.principle_id in defense_map:
+            defense_type, strength = defense_map[principle.principle_id]
+            return self._synth_defense(seed, defense_type, strength)
+
         return f"Applied principle: {principle.principle_id}"
     
-    def _synth_multi_layer_decoder(self, seed) -> str:
-        """Synthesize multi-layer decoding defense"""
-        from core import DefenseType
-        seed.strengthen_defense(DefenseType.SANITIZATION, 4)
-        return "🧠 SYNTHESIZED: Multi-layer payload decoder"
-    
-    def _synth_introspection_validator(self, seed) -> str:
-        """Synthesize introspection-based validator"""
-        from core import DefenseType
-        seed.strengthen_defense(DefenseType.TYPE_CHECKING, 4)
-        return "🧠 SYNTHESIZED: Object introspection validator"
-    
-    def _synth_recursive_type_check(self, seed) -> str:
-        """Synthesize recursive type checker"""
-        from core import DefenseType
-        seed.strengthen_defense(DefenseType.TYPE_CHECKING, 3)
-        return "🧠 SYNTHESIZED: Recursive type validator"
-    
-    def _synth_memory_validator(self, seed) -> str:
-        """Synthesize memory-based validator"""
-        from core import DefenseType
-        seed.strengthen_defense(DefenseType.BOUNDS_ENFORCEMENT, 4)
-        return "🧠 SYNTHESIZED: Memory-based size validator"
-    
-    def _synth_state_inspector(self, seed) -> str:
-        """Synthesize state inspector"""
-        from core import DefenseType
-        seed.strengthen_defense(DefenseType.STATE_PROTECTION, 4)
-        return "🧠 SYNTHESIZED: Deep state graph inspector"
-    
-    def _synth_pattern_expansion(self, seed) -> str:
-        """Synthesize expanded pattern matching"""
-        from core import DefenseType
-        seed.strengthen_defense(DefenseType.SANITIZATION, 2)
-        return "🧠 SYNTHESIZED: Expanded danger pattern library"
+    def _synth_defense(self, seed: EvolvableSeed, defense_type: DefenseType, strength: int) -> str:
+        """Synthesize a defense by strengthening it"""
+        seed.strengthen_defense(defense_type, strength)
+        return f"🧠 SYNTHESIZED: Strengthened {defense_type.name} by {strength}"
 
 
 # ============================================================================
@@ -462,9 +464,9 @@ class AdaptiveDefenseSynthesizer:
 # ============================================================================
 
 class AutonomousIntelligence:
-    """Coordinates all intelligence components"""
-    
-    def __init__(self, seed):
+    """Coordinates all intelligence components."""
+
+    def __init__(self, seed: EvolvableSeed):
         self.seed = seed
         self.knowledge_base = AttackKnowledgeBase()
         self.reasoning_engine = ReasoningEngine(self.knowledge_base)
@@ -504,8 +506,8 @@ class AutonomousIntelligence:
                 strategy = self.synthesizer.synthesize_from_principle(principle, self.seed)
                 strategies.append(strategy)
                 
-                # Update principle effectiveness (assume will work)
-                principle.update_effectiveness(True)
+                # Update principle effectiveness
+                principle.update_effectiveness(not blocked)
             
             result["strategies_applied"] = strategies
         
@@ -534,22 +536,22 @@ class AutonomousIntelligence:
     
     def print_intelligence_state(self):
         """Print current intelligence state"""
-        print(f"\n🧠 AUTONOMOUS INTELLIGENCE STATE (Gen {self.generation})")
-        print(f"{'='*90}")
+        logger.info(f"\n🧠 AUTONOMOUS INTELLIGENCE STATE (Gen {self.generation})")
+        logger.info(f"{'='*90}")
         
         stats = self.knowledge_base.get_statistics()
-        print(f"\n📚 Knowledge Base:")
-        print(f"  Attack Signatures Learned: {stats['total_signatures']}")
-        print(f"  Defensive Principles: {stats['total_principles']}")
-        print(f"  Attacks Analyzed: {stats['attacks_analyzed']}")
+        logger.info(f"\n📚 Knowledge Base:")
+        logger.info(f"  Attack Signatures Learned: {stats['total_signatures']}")
+        logger.info(f"  Defensive Principles: {stats['total_principles']}")
+        logger.info(f"  Attacks Analyzed: {stats['attacks_analyzed']}")
         
         if stats['family_distribution']:
-            print(f"\n  Attack Family Distribution:")
+            logger.info(f"\n  Attack Family Distribution:")
             for family, count in stats['family_distribution'].items():
-                print(f"    {family:25} {count:3d} signatures")
+                logger.info(f"    {family:25} {count:3d} signatures")
         
         if self.knowledge_base.principles:
-            print(f"\n🎯 Learned Principles (Top 5):")
+            logger.info(f"\n🎯 Learned Principles (Top 5):")
             sorted_principles = sorted(
                 self.knowledge_base.principles.values(),
                 key=lambda p: p.effectiveness,
@@ -557,6 +559,6 @@ class AutonomousIntelligence:
             )[:5]
             for p in sorted_principles:
                 bar = "█" * int(p.effectiveness * 10) + "░" * (10 - int(p.effectiveness * 10))
-                print(f"  {p.principle_id:30} {bar} {p.effectiveness*100:5.1f}% ({p.times_applied} applied)")
+                logger.info(f"  {p.principle_id:30} {bar} {p.effectiveness*100:5.1f}% ({p.times_applied} applied)")
         
-        print(f"{'='*90}\n")
+        logger.info(f"{'='*90}\n")
