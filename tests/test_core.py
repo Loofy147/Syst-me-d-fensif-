@@ -46,5 +46,13 @@ class TestCoreModels(unittest.TestCase):
         for defense_type in DefenseType:
             self.assertIn(defense_type, framework.defenses)
 
+    def test_decay_defense_strength(self):
+        """Test decaying a defense mechanism."""
+        seed = EvolvableSeed("TestSeed")
+        initial_strength = seed.defense_framework.defenses[DefenseType.SANITIZATION].config.strength
+        seed.decay_defense_strength(DefenseType.SANITIZATION, 2)
+        new_strength = seed.defense_framework.defenses[DefenseType.SANITIZATION].config.strength
+        self.assertEqual(new_strength, initial_strength - 2)
+
 if __name__ == '__main__':
     unittest.main()

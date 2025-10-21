@@ -161,7 +161,7 @@ class AttackKnowledgeBase:
             "has_quotes": "'" in str(payload) or '"' in str(payload),
             "has_semicolon": ";" in str(payload),
             "has_dashes": "--" in str(payload),
-            "has_sql_keywords": any(kw in str(payload).upper() for kw in ["DROP", "SELECT", "DELETE", "UNION"]),
+            "has_sql_keywords": any(kw in str(payload).upper() for kw in ["DROP", "SELECT", "DELETE", "UNION", "OR", "AND", "EXEC"]),
             "has_special_chars": any(c in str(payload) for c in ["<", ">", "{", "}", "%", "$"]),
             "is_encoded": self._detect_encoding(payload),
             "size_bytes": len(str(payload)),
@@ -289,7 +289,7 @@ class ReasoningEngine:
         self.reasoning_history: List[Dict] = []
     
     def analyze_failure(self, signature: AttackSignature, payload: Any) -> Dict[str, Any]:
-        """Deep analysis of why an attack succeeded"""
+        """Deep analysis of why an attack succeeded using granular characteristics."""
         
         analysis = {
             "signature_id": signature.signature_id,
@@ -299,39 +299,41 @@ class ReasoningEngine:
             "confidence": 0.0
         }
         
-        # Analyze based on family
-        if signature.family == AttackFamily.INJECTION:
-            analysis["root_causes"].append("Insufficient input sanitization")
-            analysis["root_causes"].append("Missing dangerous pattern detection")
-            analysis["recommended_principles"].append("multi_layer_sanitization")
+        characteristics = signature.characteristics
+
+        # Granular rule-based analysis
+        if characteristics.get("has_sql_keywords"):
+            analysis["root_causes"].append("SQL keywords detected.")
             analysis["recommended_principles"].append("pattern_blacklist_expansion")
         
-        elif signature.family == AttackFamily.ENCODING_OBFUSCATION:
-            encoding_type = signature.characteristics.get("is_encoded")
-            analysis["root_causes"].append(f"Undetected {encoding_type} encoding")
-            analysis["recommended_principles"].append("decode_before_check")
-            analysis["recommended_principles"].append("multi_layer_decoding")
-        
-        elif signature.family == AttackFamily.TYPE_MANIPULATION:
-            if signature.characteristics.get("has_magic_methods"):
-                analysis["root_causes"].append("Trusts object-provided values")
-                analysis["recommended_principles"].append("introspection_validation")
-            if signature.characteristics.get("is_complex_type"):
-                analysis["root_causes"].append("Insufficient type depth checking")
-                analysis["recommended_principles"].append("recursive_type_validation")
-        
-        elif signature.family == AttackFamily.OVERFLOW:
-            analysis["root_causes"].append("Bounds checking too lenient")
-            analysis["recommended_principles"].append("strict_size_limits")
-            analysis["recommended_principles"].append("memory_based_validation")
-        
-        elif signature.family == AttackFamily.STATE_CORRUPTION:
-            analysis["root_causes"].append("Inadequate state protection")
-            analysis["recommended_principles"].append("deep_state_inspection")
-            analysis["recommended_principles"].append("protected_attribute_blocking")
-        
+        if characteristics.get("is_encoded") != "none":
+            encoding_type = characteristics.get("is_encoded")
+            analysis["root_causes"].append(f"Payload is {encoding_type} encoded.")
+            analysis["recommended_principles"].extend(["decode_before_check", "multi_layer_decoding"])
+
+        if characteristics.get("has_magic_methods"):
+            analysis["root_causes"].append("Object with custom magic methods used.")
+            analysis["recommended_principles"].append("introspection_validation")
+
+        if characteristics.get("has_nested_structure"):
+            analysis["root_causes"].append("Deeply nested payload structure.")
+            analysis["recommended_principles"].append("recursive_type_validation")
+
+        if characteristics.get("size_bytes", 0) > 1000:
+            analysis["root_causes"].append("Anomalously large payload size.")
+            analysis["recommended_principles"].extend(["strict_size_limits", "memory_based_validation"])
+
+        # Fallback to family-based analysis if no specific characteristics are matched
+        if not analysis["root_causes"]:
+            if signature.family == AttackFamily.INJECTION:
+                analysis["root_causes"].append("General injection pattern detected.")
+                analysis["recommended_principles"].append("multi_layer_sanitization")
+            elif signature.family == AttackFamily.STATE_CORRUPTION:
+                analysis["root_causes"].append("Potential state corruption detected.")
+                analysis["recommended_principles"].append("deep_state_inspection")
+
         # Calculate confidence based on signature frequency
-        analysis["confidence"] = min(signature.success_count / 10.0, 1.0)
+        analysis["confidence"] = min(signature.success_count / 5.0, 1.0)
         
         self.reasoning_history.append(analysis)
         return analysis
@@ -439,24 +441,26 @@ class AdaptiveDefenseSynthesizer:
         """Create concrete defense from abstract principle"""
         
         defense_map = {
-            "multi_layer_decoding": (DefenseType.SANITIZATION, 4),
-            "introspection_validation": (DefenseType.TYPE_CHECKING, 4),
-            "recursive_type_validation": (DefenseType.TYPE_CHECKING, 3),
-            "memory_based_validation": (DefenseType.BOUNDS_ENFORCEMENT, 4),
-            "deep_state_inspection": (DefenseType.STATE_PROTECTION, 4),
-            "pattern_blacklist_expansion": (DefenseType.SANITIZATION, 2),
+            "multi_layer_decoding": DefenseType.SANITIZATION,
+            "introspection_validation": DefenseType.TYPE_CHECKING,
+            "recursive_type_validation": DefenseType.TYPE_CHECKING,
+            "memory_based_validation": DefenseType.BOUNDS_ENFORCEMENT,
+            "deep_state_inspection": DefenseType.STATE_PROTECTION,
+            "pattern_blacklist_expansion": DefenseType.SANITIZATION,
         }
 
         if principle.principle_id in defense_map:
-            defense_type, strength = defense_map[principle.principle_id]
-            return self._synth_defense(seed, defense_type, strength)
+            defense_type = defense_map[principle.principle_id]
+            return self._synth_defense(seed, defense_type, principle)
 
         return f"Applied principle: {principle.principle_id}"
     
-    def _synth_defense(self, seed: EvolvableSeed, defense_type: DefenseType, strength: int) -> str:
-        """Synthesize a defense by strengthening it"""
-        seed.strengthen_defense(defense_type, strength)
-        return f"🧠 SYNTHESIZED: Strengthened {defense_type.name} by {strength}"
+    def _synth_defense(self, seed: EvolvableSeed, defense_type: DefenseType, principle: DefensivePrinciple) -> str:
+        """Synthesize a defense by strengthening it proportionally to the principle's effectiveness."""
+        # The strength boost is proportional to the principle's effectiveness
+        strength_increase = int(principle.effectiveness * 5)
+        seed.strengthen_defense(defense_type, strength_increase)
+        return f"🧠 SYNTHESIZED: Strengthened {defense_type.name} by {strength_increase}"
 
 
 # ============================================================================
