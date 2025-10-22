@@ -12,3 +12,7 @@ env/
 # IDE and editor directories
 .idea/
 .vscode/
+
+# Generated output files
+output/
+*.log

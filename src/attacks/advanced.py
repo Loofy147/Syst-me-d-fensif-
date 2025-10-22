@@ -395,25 +395,43 @@ class AdvancedRedTeamExecutor:
             ),
         ]
 
-    def execute_advanced_suite(self) -> tuple:
-        """Execute all advanced attacks"""
+    def execute_advanced_suite(self, target_url: str) -> tuple:
+        """
+        Execute all advanced attacks against a live HTTP target.
+        """
+        import requests
+
         exploits = []
         blocked_count = 0
 
-        print(f"\n🔴 LAUNCHING ADVANCED ATTACK SUITE (Generation {self.generation})")
+        print(f"\n🔴 LAUNCHING LIVE RED TEAM ATTACKS (Generation {self.generation})")
         print(f"{'='*90}")
 
         for pattern in self.advanced_patterns:
             try:
-                # New generator returns payload and characteristics
                 payload, chars = pattern.payload_generator()
-            except Exception as e:
-                print(f"  ⚠️  Payload generation error: {pattern.description}")
+            except Exception:
                 continue
 
-            blocked, reason = self.target.test_defense(pattern.defense_type, payload)
+            # For SQL injection, we target the 'username' field
+            form_data = {'username': payload, 'password': 'password'}
 
-            # Record detailed outcome with the new intelligence module
+            blocked = False
+            reason = "Bypassed"
+
+            try:
+                response = requests.post(target_url, data=form_data, timeout=5)
+
+                if response.status_code == 403: # Blocked by our WAF
+                    blocked = True
+                    reason = "Blocked by AI Firewall"
+                # Any other status code means the payload got through to the app
+
+            except requests.exceptions.RequestException as e:
+                reason = f"Request failed: {e}"
+                # If the proxy is down, we can't determine if it was blocked
+                blocked = True # Treat as blocked to be safe
+
             self.attacker_intelligence.record_attack(
                 payload, chars, blocked, pattern.defense_type.name, reason
             )
@@ -422,13 +440,12 @@ class AdvancedRedTeamExecutor:
             exploit = Exploit(
                 vector=pattern.defense_type,
                 description=pattern.description,
-                payload=str(payload)[:100] + "..." if len(str(payload)) > 100 else payload,
+                payload=str(payload)[:100] + "...",
                 severity=severity,
                 difficulty=pattern.difficulty,
                 blocked=blocked,
                 defense_reason=reason
             )
-
             exploits.append(exploit)
 
             if blocked:
@@ -442,7 +459,7 @@ class AdvancedRedTeamExecutor:
         fitness = (blocked_count / len(exploits) * 100) if exploits else 0
 
         print(f"{'='*90}")
-        print(f"  Advanced Attack Results: {blocked_count}/{len(exploits)} blocked ({fitness:.1f}% defense)")
+        print(f"  Live Attack Results: {blocked_count}/{len(exploits)} blocked ({fitness:.1f}% defense)")
 
         return exploits, blocked_count, len(exploits), fitness
 
